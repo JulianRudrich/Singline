@@ -5,6 +5,8 @@
   import { onMount } from "svelte";
   import { api, subscribe } from "../lib/api";
   import { translator } from "../lib/i18n";
+  import Button from "../lib/ui/Button.svelte";
+  import Glyph from "../lib/ui/Glyph.svelte";
   import { copyText, isClientId, onSpotifyStatus, spotify, statusText, type SpotifyStatus } from "./api";
   import SpotifyTopLists from "./SpotifyTopLists.svelte";
 
@@ -96,9 +98,9 @@
       <div class="row">
         <span class="label">{t("spotify.redirectUri")}</span>
         <code class="mono uri" title={status.redirectUri}>{status.redirectUri}</code>
-        <button class="button" onclick={() => status && copy("redirect", status.redirectUri)}>
+        <Button onclick={() => status && copy("redirect", status.redirectUri)}>
           {copied === "redirect" ? t("spotify.copied") : t("spotify.copy")}
-        </button>
+        </Button>
       </div>
       <div class="divider"></div>
       <div class="row">
@@ -108,11 +110,11 @@
           <span class="spinner" aria-hidden="true"></span>
         {/if}
         {#if connected}
-          <button class="button" onclick={async () => apply(await spotify.disconnect())}>{t("spotify.disconnect")}</button>
+          <Button onclick={async () => apply(await spotify.disconnect())}>{t("spotify.disconnect")}</Button>
         {:else if busy}
-          <button class="button" onclick={async () => apply(await spotify.cancelLogin())}>{t("spotify.cancel")}</button>
+          <Button onclick={async () => apply(await spotify.cancelLogin())}>{t("spotify.cancel")}</Button>
         {:else}
-          <button class="button primary" disabled={!draftValid} onclick={connect}>{t("spotify.connect")}</button>
+          <Button primary disabled={!draftValid} onclick={connect}>{t("spotify.connect")}</Button>
         {/if}
       </div>
       {#if status.phase === "waiting"}
@@ -131,7 +133,7 @@
     {#if connected && status.needsReconnect}
       <div class="note">
         <span>{t("spotify.reconnectHint")}</span>
-        <button class="button" onclick={connect}>{t("spotify.reconnect")}</button>
+        <Button onclick={connect}>{t("spotify.reconnect")}</Button>
       </div>
     {/if}
 
@@ -144,7 +146,9 @@
       <ol class="steps">
         <li>
           {t("spotify.guideStep1")}
-          <button class="link" onclick={() => spotify.openDashboard()}>{t("spotify.openDashboard")} ↗</button>
+          <button class="link" onclick={() => spotify.openDashboard()}>
+            {t("spotify.openDashboard")}<Glyph name="external" size={12} />
+          </button>
         </li>
         <li>{t("spotify.guideStep2")}</li>
         <li>{t("spotify.guideStep3")}</li>
@@ -238,55 +242,21 @@
     height: 8px;
     border-radius: 50%;
     background: rgb(255 255 255 / 0.35);
+    transition:
+      background-color var(--duration-pane) var(--ease-out),
+      box-shadow var(--duration-pane) var(--ease-out);
   }
 
+  /* Connected: white with a soft ring, no colour. */
   .dot.on {
-    background: #30d158;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgb(255 255 255 / 0.14);
   }
 
   .status {
     flex: 1;
     min-width: 0;
     line-height: 1.35;
-  }
-
-  .button {
-    flex: none;
-    padding: 5px 12px;
-    border-radius: 8px;
-    border: 1px solid rgb(255 255 255 / 0.12);
-    background: rgb(255 255 255 / 0.1);
-    color: inherit;
-    font: inherit;
-    font-weight: 500;
-    cursor: pointer;
-    transition:
-      transform 0.12s ease,
-      background-color 0.15s ease;
-  }
-
-  .button:hover:not(:disabled) {
-    background: rgb(255 255 255 / 0.16);
-  }
-
-  .button.primary {
-    border-color: #fff;
-    background: #fff;
-    color: #000;
-  }
-
-  .button.primary:hover:not(:disabled) {
-    background: rgb(255 255 255 / 0.86);
-  }
-
-  .button:active:not(:disabled),
-  .link:active {
-    transform: scale(0.97);
-  }
-
-  .button:disabled {
-    opacity: 0.4;
-    cursor: default;
   }
 
   .hint {
@@ -303,6 +273,9 @@
 
   .link {
     align-self: flex-start;
+    display: inline-flex;
+    align-items: center;
+    gap: 2px;
     padding: 0;
     border: 0;
     background: none;
@@ -313,6 +286,17 @@
     text-decoration-color: rgb(255 255 255 / 0.4);
     text-underline-offset: 2px;
     cursor: pointer;
+    transition: text-decoration-color var(--duration-press) var(--ease-out);
+  }
+
+  .link:hover {
+    text-decoration-color: #fff;
+  }
+
+  .link:focus-visible {
+    border-radius: 3px;
+    outline: 2px solid rgb(255 255 255 / 0.7);
+    outline-offset: 2px;
   }
 
   .note {
@@ -363,10 +347,6 @@
   @media (prefers-reduced-motion: reduce) {
     .spinner {
       animation-duration: 2.4s;
-    }
-
-    .button {
-      transition: none;
     }
   }
 </style>

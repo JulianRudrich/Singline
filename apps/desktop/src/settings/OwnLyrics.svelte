@@ -2,8 +2,11 @@
   import { api } from "../lib/api";
   import { ownLyricsErrorKey, type OwnLyricsAction } from "../lib/editor";
   import type { MessageKey, Translate } from "../lib/i18n";
-  import Icon from "../lib/Icon.svelte";
   import type { LyricsView, Track } from "../lib/types";
+  import Button from "../lib/ui/Button.svelte";
+  import Card from "../lib/ui/Card.svelte";
+  import Glyph from "../lib/ui/Glyph.svelte";
+  import Row from "../lib/ui/Row.svelte";
 
   // Your own lyrics for the song that plays: open the editor, import a file, remove them.
   let { track, lyrics, t }: { track: Track; lyrics: LyricsView | null; t: Translate } = $props();
@@ -29,160 +32,51 @@
   }
 </script>
 
-<section class="card" aria-label={t("ownLyrics.title")}>
-  <div class="row">
-    <span class="icon"><Icon name="document" size={17} /></span>
-    <div class="text">
-      <span class="title">{t("ownLyrics.title")}</span>
-      <span class="hint">{own ? t("ownLyrics.activeHint") : t("ownLyrics.hint")}</span>
-    </div>
-  </div>
+<Card label={t("ownLyrics.title")}>
+  <Row card={false} icon="document" title={t("ownLyrics.title")} hint={own ? t("ownLyrics.activeHint") : t("ownLyrics.hint")} />
   <div class="buttons">
-    <button disabled={busy} onclick={() => run("edit", () => api.openEditor())}>{t("ownLyrics.edit")}</button>
-    <button disabled={busy} onclick={() => run("import", (trackKey) => api.importLyricsFile(trackKey, track.title))}>
+    <Button disabled={busy} onclick={() => run("edit", () => api.openEditor())}>{t("ownLyrics.edit")}</Button>
+    <Button disabled={busy} onclick={() => run("import", (trackKey) => api.importLyricsFile(trackKey, track.title))}>
       {t("ownLyrics.import")}
-    </button>
+    </Button>
     {#if own}
-      <button disabled={busy} onclick={() => run("remove", (trackKey) => api.removeLocalLyrics(trackKey))}>
+      <Button disabled={busy} onclick={() => run("remove", (trackKey) => api.removeLocalLyrics(trackKey))}>
         {t("ownLyrics.remove")}
-      </button>
+      </Button>
     {/if}
   </div>
   {#if message}
-    <p class="message" role="alert">{t(message)}</p>
+    <p class="message" role="alert"><Glyph name="alert" size={14} />{t(message)}</p>
   {/if}
-</section>
+</Card>
 
 <style>
-  /*
-   * Linory's building blocks in black and white. Fills and borders are the text
-   * color at low opacity: white on the dark panes, and still legible on a light window.
-   */
-  .card {
-    position: relative;
-    isolation: isolate;
-    display: flex;
-    flex-direction: column;
-    gap: 14px;
-    padding: 16px;
-    border-radius: 12px;
-  }
-
-  .card::before,
-  .card::after {
-    content: "";
-    position: absolute;
-    inset: 0;
-    border-radius: inherit;
-    pointer-events: none;
-  }
-
-  .card::before {
-    z-index: -1;
-    background: currentColor;
-    opacity: 0.05;
-  }
-
-  .card::after {
-    border: 1px solid currentColor;
-    opacity: 0.08;
-  }
-
-  .row {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-
-  .icon {
-    display: flex;
-    justify-content: center;
-    width: 26px;
-    flex: none;
-    opacity: 0.85;
-  }
-
-  .text {
-    display: flex;
-    flex-direction: column;
-    gap: 2px;
-    min-width: 0;
-  }
-
-  .title {
-    font-size: 13px;
-    font-weight: 500;
-  }
-
-  .hint {
-    font-size: 11.5px;
-    opacity: 0.55;
+  /* Under the title, in line with the text. */
+  .buttons,
+  .message {
+    margin-left: 40px;
   }
 
   .buttons {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: 6px;
   }
 
-  button {
-    position: relative;
-    isolation: isolate;
-    padding: 6px 12px;
-    border: 0;
-    border-radius: 8px;
-    background: none;
-    color: inherit;
-    font: inherit;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
-  }
-
-  button::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    border-radius: inherit;
-    background: currentColor;
-    opacity: 0.1;
-    transition: opacity 140ms cubic-bezier(0.23, 1, 0.32, 1);
-  }
-
-  button:hover:not(:disabled)::before {
-    opacity: 0.16;
-  }
-
-  button:active:not(:disabled) {
-    transform: scale(0.97);
-  }
-
-  button:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 2px;
-  }
-
-  button:disabled {
-    opacity: 0.4;
-    cursor: default;
-  }
-
+  /* No colour for problems: they stand out by brightness and the sign. */
   .message {
-    margin: 0;
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
+    margin-top: 0;
+    margin-bottom: 0;
     font-size: 11.5px;
-    color: var(--warning, #f5b25b);
+    line-height: 1.35;
+    color: #fff;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    button,
-    button::before {
-      transition: none;
-    }
-
-    button:active:not(:disabled) {
-      transform: none;
-    }
+  .message :global(svg) {
+    flex: none;
+    margin-top: 0.5px;
   }
 </style>

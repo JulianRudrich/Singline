@@ -2,11 +2,16 @@
   import type { Snippet } from "svelte";
   import type { HTMLButtonAttributes } from "svelte/elements";
 
-  // A small glass button that gives a little while pressed.
-  let { children, ...attributes }: Omit<HTMLButtonAttributes, "class"> & { children: Snippet } = $props();
+  // A small glass button that gives a little while pressed. The primary one is
+  // white with dark text: the accent is the text colour.
+  let {
+    primary = false,
+    children,
+    ...attributes
+  }: Omit<HTMLButtonAttributes, "class"> & { primary?: boolean; children: Snippet } = $props();
 </script>
 
-<button type="button" {...attributes} class="button">{@render children()}</button>
+<button type="button" {...attributes} class="button" class:primary>{@render children()}</button>
 
 <style>
   .button {
@@ -34,6 +39,17 @@
 
   .button:active:not(:disabled) {
     transform: scale(var(--press-scale));
+  }
+
+  .button.primary {
+    background: #fff;
+    box-shadow: none;
+    color: #111;
+    font-weight: 600;
+  }
+
+  .button.primary:hover:not(:disabled) {
+    background: rgb(255 255 255 / 0.88);
   }
 
   .button:disabled {

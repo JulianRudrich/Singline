@@ -202,6 +202,17 @@
     text-decoration-color: rgb(255 255 255 / 0.4);
     text-underline-offset: 2px;
     cursor: pointer;
+    transition: text-decoration-color var(--duration-press) var(--ease-out);
+  }
+
+  .link:hover {
+    text-decoration-color: #fff;
+  }
+
+  .link:focus-visible {
+    border-radius: 3px;
+    outline: 2px solid rgb(255 255 255 / 0.7);
+    outline-offset: 2px;
   }
 
   .progress {

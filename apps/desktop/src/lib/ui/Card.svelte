@@ -1,11 +1,11 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
 
-  // A group of settings on a lightly frosted panel.
-  let { children }: { children: Snippet } = $props();
+  // A group of settings on a lightly frosted panel. With a label it is a named group.
+  let { label, children }: { label?: string; children: Snippet } = $props();
 </script>
 
-<div class="card">{@render children()}</div>
+<div class="card" role={label ? "group" : undefined} aria-label={label}>{@render children()}</div>
 
 <style>
   .card {
