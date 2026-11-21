@@ -35,11 +35,7 @@ jobs:
         with:
           persist-credentials: false
       - name: Put the site together
-        run: |
-          mkdir -p _site/images
-          cp -r site/. _site/
-          cp docs/images/demo.gif docs/images/karaoke.gif docs/images/settings.png docs/images/social-preview.png _site/images/
-          cp apps/desktop/design/app-icon.svg _site/images/
+        run: bash scripts/build-site.sh _site
       - uses: actions/configure-pages@983d7736d9b0ae728b81ab479565c72886d7745b # v5.0.0
       - uses: actions/upload-pages-artifact@56afc609e74202658d3ffba0e8f6dda462b719fa # v3.0.1
         with:
