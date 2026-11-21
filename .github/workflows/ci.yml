@@ -101,6 +101,7 @@ jobs:
           name: linux-end-to-end
           path: |
             target/e2e
+            target/e2e-youtube
             target/e2e-sing
           if-no-files-found: ignore
 
