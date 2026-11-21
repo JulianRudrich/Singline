@@ -2,6 +2,7 @@
   // "On Spotify": Spotify's own ranking of the listener's top artists and
   // tracks for 4 weeks, 6 months or a year. Each row opens in Spotify.
   import type { MessageKey, Translate } from "../lib/i18n";
+  import Segmented from "../lib/ui/Segmented.svelte";
   import { spotify, type TimeRange, type TopItem, type TopLists } from "./api";
 
   let { t }: { t: Translate } = $props();
@@ -42,13 +43,13 @@
       <strong>{t("spotify.onSpotify")}</strong>
       <span class="hint">{t("spotify.topHint")}</span>
     </div>
-    <div class="segmented" role="radiogroup" aria-label={t("spotify.onSpotify")}>
-      {#each ranges as option (option)}
-        <button role="radio" aria-checked={range === option} class:selected={range === option} onclick={() => (range = option)}>
-          {t(rangeKeys[option])}
-        </button>
-      {/each}
-    </div>
+    <Segmented
+      compact
+      label={t("spotify.onSpotify")}
+      value={range}
+      options={ranges.map((option) => ({ value: option, label: t(rangeKeys[option]) }))}
+      onchange={(option) => (range = option)}
+    />
   </div>
   {#if failed}
     <p class="hint">{t("spotify.topError")}</p>
@@ -122,39 +123,24 @@
     color: rgb(255 255 255 / 0.55);
   }
 
-  .segmented {
-    display: flex;
-    gap: 2px;
-    padding: 2px;
-    border-radius: 9px;
-    background: rgb(255 255 255 / 0.06);
-  }
-
-  .segmented button,
   .list button {
     border: 0;
     background: none;
     color: inherit;
     font: inherit;
     cursor: pointer;
-    transition: transform 0.12s ease;
+    transition:
+      background-color var(--duration-press) var(--ease-out),
+      transform var(--duration-press) var(--ease-out);
   }
 
-  .segmented button {
-    padding: 4px 10px;
-    border-radius: 7px;
-    font-size: 12px;
-    color: rgb(255 255 255 / 0.7);
-  }
-
-  .segmented button.selected {
-    background: rgb(255 255 255 / 0.14);
-    color: #fff;
-  }
-
-  .segmented button:active,
   .list button:active {
-    transform: scale(0.97);
+    transform: scale(var(--press-scale-subtle));
+  }
+
+  .list button:focus-visible {
+    outline: 2px solid rgb(255 255 255 / 0.7);
+    outline-offset: -2px;
   }
 
   .columns {
@@ -222,12 +208,5 @@
   .artists {
     font-size: 11px;
     color: rgb(255 255 255 / 0.55);
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .segmented button,
-    .list button {
-      transition: none;
-    }
   }
 </style>

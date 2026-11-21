@@ -2,12 +2,20 @@
   import { glide } from "./glide";
 
   // Mutually exclusive options; the selection glides like the one in the sidebar.
+  // Compact ones size each option to its label, for a row of ranges.
   let {
     value,
     options,
     label,
+    compact = false,
     onchange,
-  }: { value: T; options: { value: T; label: string }[]; label: string; onchange: (value: T) => void } = $props();
+  }: {
+    value: T;
+    options: { value: T; label: string }[];
+    label: string;
+    compact?: boolean;
+    onchange: (value: T) => void;
+  } = $props();
 
   const index = $derived(options.findIndex((option) => option.value === value));
   let group = $state<HTMLElement>();
@@ -22,7 +30,7 @@
   }
 </script>
 
-<div class="segmented" role="radiogroup" aria-label={label} bind:this={group} use:glide={index}>
+<div class="segmented" class:compact role="radiogroup" aria-label={label} bind:this={group} use:glide={index}>
   <span class="pill" data-pill aria-hidden="true"></span>
   {#each options as option (option.value)}
     {@const selected = option.value === value}
@@ -89,6 +97,17 @@
 
   button.selected {
     color: #fff;
+  }
+
+  button:hover:not(.selected) {
+    color: #fff;
+  }
+
+  .compact button {
+    flex: none;
+    height: 24px;
+    padding: 0 11px;
+    font-size: 12.5px;
   }
 
   button:active {

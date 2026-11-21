@@ -4,6 +4,7 @@
   import { translator, type MessageKey } from "../lib/i18n";
   import { connect } from "../lib/live";
   import type { AppInfo } from "../lib/types";
+  import Segmented from "../lib/ui/Segmented.svelte";
   import HistorySettings from "../settings/HistorySettings.svelte";
   import { onHistory, statsApi } from "./api";
   import BarChart from "./BarChart.svelte";
@@ -92,13 +93,13 @@
       <h1>{t("stats.heading")}</h1>
       <p>{t("stats.subtitle")}</p>
     </div>
-    <div class="ranges" role="radiogroup" aria-label={t("stats.range")}>
-      {#each RANGES as option (option)}
-        <button type="button" role="radio" aria-checked={range === option} class:selected={range === option} onclick={() => choose(option)}>
-          {t(`stats.range.${option}` as MessageKey)}
-        </button>
-      {/each}
-    </div>
+    <Segmented
+      compact
+      label={t("stats.range")}
+      value={range}
+      options={RANGES.map((option) => ({ value: option, label: t(`stats.range.${option}` as MessageKey) }))}
+      onchange={choose}
+    />
   </header>
 
   {#if summary && !summary.hasHistory}
@@ -237,48 +238,6 @@
     margin: 0;
     font-size: 13px;
     color: rgb(255 255 255 / 0.6);
-  }
-
-  .ranges {
-    display: flex;
-    gap: 2px;
-    padding: 2px;
-    border-radius: 9px;
-    background: rgb(255 255 255 / 0.06);
-    border: 1px solid rgb(255 255 255 / 0.08);
-  }
-
-  .ranges button {
-    padding: 4px 12px;
-    border: 0;
-    border-radius: 7px;
-    background: none;
-    color: rgb(255 255 255 / 0.7);
-    font: inherit;
-    font-size: 12.5px;
-    cursor: pointer;
-    transition:
-      background 160ms ease-out,
-      color 160ms ease-out,
-      transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
-  }
-
-  .ranges button:hover {
-    color: #fff;
-  }
-
-  .ranges button.selected {
-    background: rgb(255 255 255 / 0.16);
-    color: #fff;
-  }
-
-  .ranges button:active {
-    transform: scale(0.97);
-  }
-
-  .ranges button:focus-visible {
-    outline: 2px solid rgb(255 255 255 / 0.6);
-    outline-offset: 1px;
   }
 
   .card {
@@ -449,8 +408,7 @@
       animation: none;
     }
 
-    .content,
-    .ranges button {
+    .content {
       transition: none;
     }
   }
