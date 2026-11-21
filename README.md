@@ -16,7 +16,7 @@ For Spotify, Apple Music, Amazon Music and YouTube Music, on Windows, macOS and 
 </div>
 
 > [!NOTE]
-> Singline is in active development and has no stable release yet. Every change is tested on Linux with an automated end-to-end test, and every change on `main` produces test builds for Windows and macOS ([Install](#install)). The builds are not code-signed yet.
+> Singline is in active development and has no stable release yet. Every change is tested on Linux with automated end-to-end tests, and every change on `main` produces a [test build](https://github.com/JulianRudrich/Singline/releases/tag/nightly) for Windows, macOS and Linux. The builds are not code-signed yet; [Install](#install) explains how to open them.
 
 ## Contents
 
@@ -93,18 +93,28 @@ Every change on `main` produces a test build for all three systems. The newest o
 2. Install it. The builds are not signed yet:
    - **Windows:** if SmartScreen stops the installer, choose **More info** → **Run anyway**. Windows releases are to be signed through the SignPath Foundation; see the [code signing policy](docs/CODE_SIGNING_POLICY.md).
    - **macOS:** if macOS refuses to open the app, go to **System Settings → Privacy & Security** and choose **Open Anyway** (on macOS 14 and earlier, right-click the app and choose **Open**). When you play music, allow Singline to control Spotify or Music.
-   - **Linux:** install the package with `sudo apt install ./Singline-Linux.deb`, or make the AppImage executable with `chmod +x Singline-Linux.AppImage` and start it.
+   - **Linux:** install the package with `sudo apt install ./Singline-Linux.deb`, or make the AppImage executable with `chmod +x Singline-Linux.AppImage` and start it. If the AppImage does not start, install FUSE 2: `sudo apt install libfuse2t64` on Ubuntu 24.04 and later, `sudo apt install libfuse2` on older versions.
 
 Every build of `main` is also under [Actions](https://github.com/JulianRudrich/Singline/actions/workflows/ci.yml?query=branch%3Amain+is%3Asuccess), for signed-in GitHub users, together with `singline-watch`, a small tool that shows what your players report (see [Troubleshooting](#troubleshooting)).
 
 ### Browser extension
 
-The extension lets Singline follow YouTube Music, YouTube and other web players in Chrome, Edge and Firefox, even in a background tab. Until it is in the browser stores, load it from [`extensions/browser`](extensions/browser):
+The extension lets Singline follow YouTube Music, YouTube and other web players in Chrome, Edge and Firefox, even in a background tab. Until it is in the browser stores, load it from the folder [`extensions/browser`](extensions/browser). Download [the repository as a ZIP file](https://github.com/JulianRudrich/Singline/archive/refs/heads/main.zip) and unpack it. Then:
 
 - **Chrome and Edge:** open `chrome://extensions` (or `edge://extensions`), turn on **Developer mode**, click **Load unpacked** and choose `extensions/browser`.
 - **Firefox 128 or later:** open `about:debugging#/runtime/this-firefox`, click **Load Temporary Add-on…** and choose `extensions/browser/manifest.json`.
 
 Then pair it once: Settings → General → **Browser extension** shows a six-digit code; type it into the extension's popup and click **Pair**. The [extension's README](extensions/browser/README.md) has the details.
+
+### Uninstall
+
+Turn off Settings → General → **Open at login** first, then:
+
+- **Windows:** Settings → Apps → Installed apps → Singline → **Uninstall**.
+- **macOS:** quit Singline and move it from Applications to the Trash.
+- **Linux:** `sudo apt remove singline` for the package, or delete the AppImage.
+
+Your settings, lyrics and listening history stay behind; delete the folders listed under [Privacy](#privacy) to remove them too.
 
 ### The native macOS app
 
@@ -218,6 +228,12 @@ For **Sing to find**, Whisper first turns your singing into words on your comput
 
 **Singline is not in the Dock on macOS.** Singline lives in the menu bar: look for the icon with three lines near the clock. It joins the Dock, the app switcher and Force Quit while one of its windows is open. Open Singline again from Applications, Launchpad or Spotlight to bring up the settings, where **Quit Singline** sits at the bottom. On a MacBook with a notch, macOS hides the menu bar icons that do not fit beside it; quit a few other menu bar apps to make room, or turn on Settings → General → **Show in Dock** to keep Singline in the Dock, where a click opens the settings.
 
+**macOS says Singline is damaged and cannot be opened.** macOS says this about some apps from the internet that are not signed by Apple, which the test builds are not yet. After moving Singline to Applications, remove the download mark in Terminal and open it again:
+
+```bash
+xattr -dr com.apple.quarantine /Applications/Singline.app
+```
+
 **macOS says to allow access in System Settings.** Singline asks Spotify and Music for the current song through Apple Events. Turn on Singline under **System Settings → Privacy & Security → Automation**.
 
 **Sing to find cannot hear you.** Allow Singline to use the microphone: on macOS under **System Settings → Privacy & Security → Microphone**, on Windows under **Settings → Privacy & security → Microphone → Let desktop apps access your microphone**. On Linux, check that the microphone is the chosen input and not muted. Singline says which of these it is.
@@ -238,7 +254,7 @@ For **Sing to find**, Whisper first turns your singing into words on your comput
 
 **The overlay does not stay on top on Linux (Wayland).** GNOME does not let apps keep normal windows on top under Wayland. Start Singline with `GDK_BACKEND=x11` so it runs through XWayland.
 
-**Find out what your player reports.** `singline-watch` prints live what every player on your computer reports: title, artist, album, position, how far the position drifts, and which controls it offers. The Windows and macOS test builds include it; from source, run:
+**Find out what your player reports.** `singline-watch` prints live what every player on your computer reports: title, artist, album, position, how far the position drifts, and which controls it offers. The builds under [Actions](https://github.com/JulianRudrich/Singline/actions/workflows/ci.yml?query=branch%3Amain+is%3Asuccess) and every release include it; from source, run:
 
 ```bash
 cargo run --release -p media-session --bin singline-watch
