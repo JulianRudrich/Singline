@@ -12,6 +12,7 @@ import {
   revealBlur,
   rise,
   slideIn,
+  slideOut,
   smoothstep,
   songExit,
   Spring,
@@ -107,9 +108,12 @@ describe("transitions", () => {
     expect(dropIn(element, { reduced: true }).css?.(0, 1)).toBe("opacity: 0");
   });
 
-  it("slides controls in from the right", () => {
+  it("slides controls in from the right, and out again quicker", () => {
     expect(slideIn(element).css?.(0, 1)).toBe("opacity: 0; transform: translateX(6px)");
     expect(slideIn(element, { reduced: true }).css?.(0, 1)).toBe("opacity: 0");
+    expect(slideOut(element).duration).toBe(duration.dismiss);
+    expect(slideOut(element).css?.(0, 1)).toBe("opacity: 0; transform: translateX(6px)");
+    expect(slideOut(element, { reduced: true }).css?.(0, 1)).toBe("opacity: 0");
   });
 });
 

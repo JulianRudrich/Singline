@@ -1,10 +1,9 @@
 <script lang="ts">
   // Previous, play or pause, and next for the followed player. Only the
-  // buttons the player supports appear.
-  import { prefersReducedMotion } from "svelte/motion";
+  // buttons the player supports appear. Where they come and go, the place that
+  // shows them animates them.
   import { api, type PlayerCommand } from "../lib/api";
   import type { Translate } from "../lib/i18n";
-  import { slideIn } from "../lib/motion";
   import type { Capabilities } from "../lib/types";
 
   let {
@@ -19,7 +18,7 @@
   }
 </script>
 
-<div class="controls" class:large transition:slideIn={{ reduced: prefersReducedMotion.current }}>
+<div class="controls" class:large>
   {#if capabilities.previous}
     <button class="skip" onclick={() => send({ kind: "previous" })} title={t("player.previous")} aria-label={t("player.previous")}>
       <svg width="13" height="13" viewBox="0 0 24 24" aria-hidden="true">

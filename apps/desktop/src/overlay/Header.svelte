@@ -1,13 +1,14 @@
 <script lang="ts">
   // The header, like the Now Playing widget: cover art, title and artist,
   // entering one after another for each song. While the pointer is over the
-  // overlay the playback controls slide in; otherwise short notes about the
-  // lyrics sit there.
+  // overlay the playback controls and the microphone slide in; otherwise short
+  // notes about the lyrics sit there. Both share one place, so they cross-fade
+  // without pushing each other aside.
   import { prefersReducedMotion } from "svelte/motion";
   import { fade } from "svelte/transition";
   import type { Translate } from "../lib/i18n";
   import Icon from "../lib/Icon.svelte";
-  import { songExit } from "../lib/motion";
+  import { duration, slideIn, slideOut, songExit } from "../lib/motion";
   import type { Capabilities, Track } from "../lib/types";
   import LikeButton from "../spotify/LikeButton.svelte";
   import Controls from "./Controls.svelte";
@@ -35,7 +36,9 @@
     $props();
 
   const details = $derived(track ? [track.title, track.artist, playerName].filter(Boolean).join(" · ") : undefined);
-  const fadeMotion = $derived({ duration: prefersReducedMotion.current ? 0 : 200 });
+  const reduced = $derived(prefersReducedMotion.current);
+  const tools = $derived(controls !== null || mic);
+  const notes = $derived(notSynced || ownLyrics || paused);
 </script>
 
 <header>
@@ -52,33 +55,42 @@
       </div>
     {/key}
   </div>
-  {#if controls}
-    <LikeButton uri={track?.sourceId} {t} />
-    <Controls capabilities={controls} {playing} {t} />
-  {:else}
-    {#if notSynced}
-      <span class="caption" transition:fade={fadeMotion}>{t("overlay.notSynced")}</span>
+  <div class="end">
+    {#if tools}
+      <div class="tools" in:slideIn={{ reduced }} out:slideOut={{ reduced }}>
+        {#if controls}
+          <LikeButton uri={track?.sourceId} {t} />
+          <Controls capabilities={controls} {playing} {t} />
+        {/if}
+        {#if mic}
+          {@const label = singing ? t("overlay.stopSinging") : t("overlay.sing")}
+          <button class="sing" class:on={singing} onclick={onsing} title={label} aria-label={label}>
+            <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
+              <rect x="9" y="3" width="6" height="11" rx="3" />
+              <path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7" />
+            </svg>
+          </button>
+        {/if}
+      </div>
+    {:else if notes}
+      <!-- The notes wait for the controls to make way. -->
+      <div class="notes" in:fade={{ duration: duration.pane, delay: reduced ? 0 : 60 }} out:fade={{ duration: duration.dismiss }}>
+        {#if notSynced}
+          <span class="caption">{t("overlay.notSynced")}</span>
+        {/if}
+        {#if ownLyrics}
+          <span class="badge" title={t("overlay.ownLyrics")} aria-label={t("overlay.ownLyrics")}>
+            <Icon name="document" size={12} />
+          </span>
+        {/if}
+        {#if paused}
+          <span class="badge" title={t("overlay.paused")} aria-label={t("overlay.paused")}>
+            <Icon name="pause" size={12} />
+          </span>
+        {/if}
+      </div>
     {/if}
-    {#if ownLyrics}
-      <span class="badge" title={t("overlay.ownLyrics")} aria-label={t("overlay.ownLyrics")} transition:fade={fadeMotion}>
-        <Icon name="document" size={12} />
-      </span>
-    {/if}
-    {#if paused}
-      <span class="badge" title={t("overlay.paused")} aria-label={t("overlay.paused")} transition:fade={fadeMotion}>
-        <Icon name="pause" size={12} />
-      </span>
-    {/if}
-  {/if}
-  {#if mic}
-    {@const label = singing ? t("overlay.stopSinging") : t("overlay.sing")}
-    <button class="sing" class:on={singing} onclick={onsing} title={label} aria-label={label} transition:fade={fadeMotion}>
-      <svg width="16" height="16" viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="9" y="3" width="6" height="11" rx="3" />
-        <path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7" />
-      </svg>
-    </button>
-  {/if}
+  </div>
   <button class="settings" onclick={onsettings} title={t("overlay.openSettings")} aria-label={t("overlay.openSettings")}>
     <svg width="19" height="19" viewBox="0 0 24 24" aria-hidden="true">
       <circle class="ring" cx="12" cy="12" r="9.5" />
@@ -136,6 +148,22 @@
     font-size: 11px;
     line-height: 1.3;
     color: rgb(255 255 255 / 0.6);
+  }
+
+  /* The tools and the notes share this place and stand at its right end. */
+  .end {
+    flex: none;
+    display: grid;
+    justify-items: end;
+    align-items: center;
+  }
+
+  .tools,
+  .notes {
+    grid-area: 1 / 1;
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
 
   .caption {

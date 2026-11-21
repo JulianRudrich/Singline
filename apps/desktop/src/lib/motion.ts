@@ -81,6 +81,11 @@ export function slideIn(_node: Element, { reduced = false }: { reduced?: boolean
   };
 }
 
+/** The way back: quicker, as closing is. With reduced motion it only fades. */
+export function slideOut(node: Element, options: { reduced?: boolean } = {}): TransitionConfig {
+  return { ...slideIn(node, options), duration: duration.dismiss };
+}
+
 /**
  * One number moving towards a target like a damped spring: `response` is the
  * period of the undamped spring in seconds, `damping` the share of critical
