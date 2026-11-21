@@ -1,0 +1,57 @@
+# Checks of the Rust dependencies with cargo-deny: security advisories,
+# licenses, banned or duplicate crates, and where crates come from. The Lint
+# workflow runs it on every change; locally run `cargo deny check`.
+# Reference: https://embarkstudios.github.io/cargo-deny/
+
+[graph]
+# The systems Singline is built for; crates only other systems need are left out.
+targets = [
+  "x86_64-unknown-linux-gnu",
+  "x86_64-pc-windows-msvc",
+  "x86_64-apple-darwin",
+  "aarch64-apple-darwin",
+]
+all-features = true
+
+[advisories]
+# Vulnerabilities, unmaintained and unsound crates, and yanked releases all
+# count. To accept an advisory, add its ID to `ignore` with the reason.
+yanked = "deny"
+ignore = []
+
+[licenses]
+# Licenses that can be combined with Singline's GPL-3.0-or-later.
+allow = [
+  "0BSD",
+  "Apache-2.0",
+  "Apache-2.0 WITH LLVM-exception",
+  "BSD-2-Clause",
+  "BSD-3-Clause",
+  "BSL-1.0",
+  "CC0-1.0",
+  "CDLA-Permissive-2.0",
+  "ISC",
+  "MIT",
+  "MIT-0",
+  "MPL-2.0",
+  "Unicode-3.0",
+  "Unlicense",
+  "Zlib",
+]
+
+[licenses.private]
+# Singline's own crates are not published and carry its license.
+ignore = true
+
+[bans]
+# Tauri brings several versions of some crates; they are listed, not refused.
+multiple-versions = "warn"
+# A dependency without a version could be anything; paths within the
+# workspace are fine.
+wildcards = "deny"
+allow-wildcard-paths = true
+
+[sources]
+# Crates come from crates.io only.
+unknown-registry = "deny"
+unknown-git = "deny"

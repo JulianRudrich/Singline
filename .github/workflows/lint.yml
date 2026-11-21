@@ -1,8 +1,8 @@
 name: Lint
 
-# Quick checks next to CI, a minute or two each: the workflows, the spelling
-# and the links. They also run on main once a week, for links that broke
-# elsewhere.
+# Quick checks next to CI, a minute or two each: the workflows, the spelling,
+# the links and the Rust dependencies. They also run on main once a week, for
+# links that broke elsewhere and for new security advisories.
 on:
   push:
   pull_request:
@@ -66,3 +66,22 @@ jobs:
             --no-progress
             ${{ (github.event_name == 'push' || github.event_name == 'pull_request') && '--offline' || '' }}
             './**/*.md' '_site/**/*.html'
+
+  dependencies:
+    name: Rust dependencies (${{ matrix.checks }})
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        checks: [advisories, bans licenses sources]
+    # A new advisory can appear without any change here, so advisories show as
+    # a failed job without failing the run. The settings are in deny.toml.
+    continue-on-error: ${{ matrix.checks == 'advisories' }}
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - uses: EmbarkStudios/cargo-deny-action@17aeb3c839e42274e2b8adf721c8c65edfdc74dd # v2.1.3
+        with:
+          command: check ${{ matrix.checks }}
