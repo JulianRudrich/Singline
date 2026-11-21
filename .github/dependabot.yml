@@ -1,0 +1,59 @@
+# Dependency updates, every Monday, in as few pull requests as makes sense:
+# minor and patch updates come grouped per ecosystem, major updates one by
+# one. A new version waits a week before Dependabot proposes it, so a broken
+# or malicious release is usually found first. Security updates do not wait.
+#
+# Tauri's crate and its npm packages must stay on the same minor version, or
+# the Tauri CLI refuses to build. They come in a pull request of their own on
+# each side, both named after Tauri: merge the two together.
+version: 2
+
+updates:
+  - package-ecosystem: cargo
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      tauri:
+        patterns: ["tauri*"]
+      rust:
+        update-types: [minor, patch]
+
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: build
+      include: scope
+    groups:
+      tauri:
+        patterns: ["@tauri-apps/*"]
+      web:
+        update-types: [minor, patch]
+
+  # The workflows, and the action that signs Windows releases.
+  - package-ecosystem: github-actions
+    directories:
+      - /
+      - /.github/actions/*
+    schedule:
+      interval: weekly
+      day: monday
+    cooldown:
+      default-days: 7
+    commit-message:
+      prefix: ci
+      include: scope
+    groups:
+      actions:
+        update-types: [minor, patch]
