@@ -1,8 +1,11 @@
 name: Website
 
-# Publishes site/ to GitHub Pages, with the pictures from docs/images.
-# Runs by hand and for every release, but not for the test build release,
-# until Pages is switched on in the repository settings.
+# Publishes site/ to GitHub Pages, with the pictures from docs/images, once
+# Pages is switched on in the repository settings (source: GitHub Actions).
+# Runs for every release, but not for the test build release: the Release
+# workflow starts it after publishing, because a release published with the
+# workflow's own token starts no other workflow. A release published by hand
+# starts it through the release event. Run it by hand for changes in between.
 on:
   release:
     types: [released]
@@ -13,9 +16,11 @@ permissions:
   pages: write
   id-token: write
 
+# One deployment at a time. A newer run waits rather than break off one that
+# is under way.
 concurrency:
   group: pages
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:

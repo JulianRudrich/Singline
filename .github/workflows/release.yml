@@ -300,6 +300,8 @@ jobs:
     permissions:
       # Uploads the update manifest and publishes the release.
       contents: write
+      # Starts the website workflow.
+      actions: write
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
@@ -321,3 +323,11 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release edit "v$VERSION" --repo "$GITHUB_REPOSITORY" --draft=false --latest
+      - name: Update the website
+        # The release event of a release this workflow publishes starts no
+        # other workflow, so the website is started here.
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh workflow run pages.yml --repo "$GITHUB_REPOSITORY" \
+            || echo "::warning::The website workflow did not start; run it by hand from the Actions tab."
