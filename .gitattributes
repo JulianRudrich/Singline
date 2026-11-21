@@ -1,0 +1,10 @@
+# Git stores every text file with LF line endings. Shell scripts keep LF in a
+# Windows checkout too, so they still run in Git Bash and WSL.
+* text=auto
+*.sh text eol=lf
+
+# Pictures and icons: no line ending conversion and no text diffs.
+*.png binary
+*.gif binary
+*.ico binary
+*.icns binary
