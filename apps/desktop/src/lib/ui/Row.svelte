@@ -74,6 +74,7 @@
     flex: none;
     display: flex;
     align-items: center;
+    gap: 8px;
     margin-left: 12px;
   }
 </style>

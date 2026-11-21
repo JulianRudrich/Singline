@@ -3,13 +3,13 @@
   import { api } from "../lib/api";
   import { translator } from "../lib/i18n";
   import { connect } from "../lib/live";
-  import SettingRow from "../lib/SettingRow.svelte";
   import type { AppInfo, BridgeView } from "../lib/types";
+  import Button from "../lib/ui/Button.svelte";
+  import Card from "../lib/ui/Card.svelte";
+  import Row from "../lib/ui/Row.svelte";
 
   // Self-contained: shows the code that pairs the Singline browser extension and the
   // browsers that paired, so it fits into any pane. While it is shown, pairing stays open.
-  const PUZZLE = "M4 4h6a2 2 0 1 1 4 0h6v6a2 2 0 1 1 0 4v6H4z";
-  const WINDOW = "M4 5h16v14H4zM4 9h16M7 7h.01M10 7h.01";
 
   let app = $state<AppInfo | null>(null);
   let bridge = $state<BridgeView | null>(null);
@@ -46,25 +46,25 @@
 </script>
 
 {#if app && bridge?.available}
-  <div class="bridge">
-    <SettingRow icon={PUZZLE} title={t("bridge.title")} hint={bridge.port === null ? t("bridge.unavailable") : t("bridge.hint")}>
+  <Card>
+    <Row card={false} icon="puzzle" title={t("bridge.title")} hint={bridge.port === null ? t("bridge.unavailable") : t("bridge.hint")}>
       {#if code}
         <output class="code" aria-label={t("bridge.codeLabel")}>{code}</output>
       {/if}
-    </SettingRow>
+    </Row>
     {#each bridge.browsers as browser (browser.id)}
-      <SettingRow icon={WINDOW} title={browser.name} hint={browser.connected ? t("bridge.connected") : t("bridge.idle")}>
-        <button disabled={busy} onclick={() => forget(browser.id)}>{t("bridge.remove")}</button>
-      </SettingRow>
+      <div class="divider"></div>
+      <Row card={false} icon="browser" title={browser.name} hint={browser.connected ? t("bridge.connected") : t("bridge.idle")}>
+        <Button disabled={busy} onclick={() => forget(browser.id)}>{t("bridge.remove")}</Button>
+      </Row>
     {/each}
-  </div>
+  </Card>
 {/if}
 
 <style>
-  .bridge {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
+  .divider {
+    height: 1px;
+    background: rgb(255 255 255 / 0.08);
   }
 
   .code {
@@ -74,60 +74,6 @@
     letter-spacing: 0.08em;
     white-space: nowrap;
     user-select: all;
-  }
-
-  button {
-    position: relative;
-    isolation: isolate;
-    padding: 6px 12px;
-    border: 0;
-    border-radius: 8px;
-    background: none;
-    color: inherit;
-    font: inherit;
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: transform 140ms cubic-bezier(0.23, 1, 0.32, 1);
-  }
-
-  button::before {
-    content: "";
-    position: absolute;
-    inset: 0;
-    z-index: -1;
-    border-radius: inherit;
-    background: currentColor;
-    opacity: 0.1;
-    transition: opacity 140ms cubic-bezier(0.23, 1, 0.32, 1);
-  }
-
-  button:hover:not(:disabled)::before {
-    opacity: 0.16;
-  }
-
-  button:active:not(:disabled) {
-    transform: scale(0.97);
-  }
-
-  button:focus-visible {
-    outline: 2px solid currentColor;
-    outline-offset: 2px;
-  }
-
-  button:disabled {
-    opacity: 0.4;
-    cursor: default;
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    button,
-    button::before {
-      transition: none;
-    }
-
-    button:active:not(:disabled) {
-      transform: none;
-    }
+    -webkit-user-select: all;
   }
 </style>

@@ -190,11 +190,6 @@
   :global(html[data-view="stats"]) {
     color-scheme: dark;
     --text: #fff;
-    --secondary: rgb(255 255 255 / 0.6);
-    --separator: rgb(255 255 255 / 0.08);
-    --control: rgb(255 255 255 / 0.06);
-    --control-selected: rgb(255 255 255 / 0.16);
-    --window: #111113;
     background: #111113;
   }
 

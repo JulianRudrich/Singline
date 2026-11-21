@@ -1,12 +1,6 @@
 :root {
-  /* Monochrome: the accent is the text colour. */
-  --accent: #1d1f22;
+  /* Monochrome: the accent is the text colour. Every window sets its own on top. */
   --text: #1d1f22;
-  --secondary: #6a6f76;
-  --separator: rgb(0 0 0 / 0.12);
-  --control: rgb(0 0 0 / 0.05);
-  --control-selected: #fff;
-  --window: #f4f5f6;
   /* Motion, mirrored in src/lib/motion.ts. */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --duration-press: 140ms;
@@ -27,13 +21,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --accent: #eceef0;
     --text: #eceef0;
-    --secondary: #a2a8b0;
-    --separator: rgb(255 255 255 / 0.12);
-    --control: rgb(255 255 255 / 0.06);
-    --control-selected: rgb(255 255 255 / 0.14);
-    --window: #1e2226;
   }
 }
 

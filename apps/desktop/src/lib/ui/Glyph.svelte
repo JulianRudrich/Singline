@@ -26,7 +26,10 @@
     | "display"
     | "download"
     | "alert"
-    | "document";
+    | "document"
+    | "puzzle"
+    | "browser"
+    | "history";
 </script>
 
 <script lang="ts">
@@ -110,6 +113,13 @@
   {:else if name === "lyrics"}
     <path d="M4.5 5h15A1.5 1.5 0 0 1 21 6.5v9a1.5 1.5 0 0 1-1.5 1.5H10l-4.5 3.5V17h-1A1.5 1.5 0 0 1 3 15.5v-9A1.5 1.5 0 0 1 4.5 5Z" />
     <path d="M7.5 9.5h9M7.5 13h6" />
+  {:else if name === "puzzle"}
+    <path d="M4 4h6a2 2 0 1 1 4 0h6v6a2 2 0 1 1 0 4v6H4z" />
+  {:else if name === "browser"}
+    <rect x="3.5" y="4.5" width="17" height="15" rx="2.5" />
+    <path d="M3.5 9h17M7 6.75h.01M10 6.75h.01" />
+  {:else if name === "history"}
+    <path d="M3.5 12a8.5 8.5 0 1 0 2.6-6.1M3 4v4.5h4.5M12 7.5V12l3 2" />
   {:else if name === "download"}
     <path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 19.5h14" />
   {:else if name === "external"}
