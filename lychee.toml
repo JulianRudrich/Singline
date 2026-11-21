@@ -1,0 +1,21 @@
+# Link check with lychee (https://lychee.cli.rs). The Lint workflow checks the
+# links between the repository's own files on every change, and every link
+# once a week. Locally, after `bash scripts/build-site.sh`:
+#   lychee --offline './**/*.md' '_site/**/*.html'
+# and without --offline to check the links to other sites too.
+
+# Links to a heading (#install) must find it.
+include_fragments = "anchor-only"
+
+max_retries = 3
+timeout = 30
+
+exclude_path = [
+  "(^|/)node_modules/",
+  "(^|/)target/",
+]
+
+exclude = [
+  # Answers automated requests with 403.
+  '^https://genius\.com/',
+]

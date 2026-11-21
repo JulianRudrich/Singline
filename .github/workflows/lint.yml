@@ -1,9 +1,13 @@
 name: Lint
 
-# Quick checks next to CI, a minute or two each: the workflows and the spelling.
+# Quick checks next to CI, a minute or two each: the workflows, the spelling
+# and the links. They also run on main once a week, for links that broke
+# elsewhere.
 on:
   push:
   pull_request:
+  schedule:
+    - cron: "23 4 * * 1"
   workflow_dispatch:
 
 permissions:
@@ -42,3 +46,23 @@ jobs:
       - name: typos
         # The words it should accept are in typos.toml.
         run: pipx run typos==1.52.2
+
+  links:
+    name: Links
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: Put the website together
+        run: bash scripts/build-site.sh
+      - name: lychee
+        uses: lycheeverse/lychee-action@e7477775783ea5526144ba13e8db5eec57747ce8 # v2.9.0
+        with:
+          # A change checks the links between the repository's files; the
+          # weekly run checks every link. The settings are in lychee.toml.
+          args: >-
+            --no-progress
+            ${{ (github.event_name == 'push' || github.event_name == 'pull_request') && '--offline' || '' }}
+            './**/*.md' '_site/**/*.html'
