@@ -75,6 +75,13 @@
     .reveal { opacity: 0; transform: translateY(8px); filter: blur(6px); transition: opacity 550ms var(--ease), transform 550ms var(--ease), filter 550ms var(--ease); }
     .reveal.shown { opacity: 1; transform: none; filter: none; }
     @media (prefers-reduced-motion: reduce) { .reveal { transform: none; filter: none; transition: opacity 300ms; } }
+    /* Phones: the navigation and the player table fit the screen. */
+    @media (max-width: 520px) {
+      .wrap { padding: 0 16px; }
+      nav { gap: 10px; }
+      nav a.link { margin-left: 4px; font-size: 14px; }
+      th, td { padding: 10px 8px; font-size: 14px; }
+    }
   </style>
 </head>
 <body>
