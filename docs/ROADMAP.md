@@ -30,7 +30,7 @@ Singline is the cross-platform successor of Lyrics Overlay: one code base for Wi
 
 - [x] Own lyrics: LRC import and an editor with a timestamp key
 - [x] Hiding the overlay while nothing plays
-- [ ] A configurable shortcut
+- [x] A configurable shortcut
 - [ ] Installers with automatic updates
 - [ ] Fixes from measurements A and B, for example keeping the overlay above full-screen apps on macOS
 
@@ -41,7 +41,7 @@ Ported from the Swift code contributed from Linory:
 - [x] Mini-player with a seek bar, jumping to a line by clicking it, chorus markers and cover art
 - [x] Estimated word highlight for line-synced lyrics, splitting long lines, scrolling lines and smooth song changes
 - [x] Settings in the glass design, sleep timer and listening statistics
-- [ ] Glass menu panel with the current song
+- [x] Glass menu panel with the current song, on macOS and Windows
 - [x] Spotify connection with True Shuffle, liking songs and top lists
 - [ ] Homebrew
 

@@ -14,7 +14,7 @@ Before its first release, Singline must offer every feature of the native macOS 
 | Never takes the focus from other apps | 🧪 | 🧪 | 🧪 | |
 | Dragging, four corners, remembered position, several displays | 🧪 | 🧪 | 🧪 | |
 | Click-through, remembered; opening the app again turns it off | 🧪 | 🧪 | 🧪 | macOS: also from Applications or the Dock |
-| Shortcut to show and hide | 🧪 | 🧪 | 🧪 | Linux: X11 only for now |
+| Shortcut to show and hide, changeable in the settings | 🧪 | 🧪 | 🧪 | Linux: X11 only for now |
 | Three layouts, font size, opacity and size | ✅ | 🧪 | 🧪 | Linory has one fixed layout |
 | Lyrics only, without song, controls and timeline | ✅ | 🧪 | 🧪 | Not in Linory |
 | Welcome at the first start: where the icon is, player, permissions, extension | ✅ | 🧪 | 🧪 | Not in Linory |
@@ -69,7 +69,8 @@ Before its first release, Singline must offer every feature of the native macOS 
 |---|:-:|:-:|:-:|---|
 | English and German, following the system language | ✅ | 🧪 | 🧪 | |
 | Open at login | 🧪 | 🧪 | 🧪 | |
-| Tray menu | 🧪 | 🧪 | 🧪 | Linory: glass panel with the current song (planned) |
+| Tray menu | 🧪 | 🧪 | 🧪 | |
+| Glass panel from the tray icon: current song, controls, quick switches | — | 🧪 | 🧪 | Linux reports no clicks on the tray icon, so it opens the menu |
 | Sleep timer | 🧪 | 🧪 | 🧪 | |
 | Karaoke: fullscreen lyrics on a chosen display, countdowns, intro card | 🧪 | 🧪 | 🧪 | Not in Linory; Linux checked on a virtual display |
 | Listening statistics | ✅ | 🧪 | 🧪 | For every player |

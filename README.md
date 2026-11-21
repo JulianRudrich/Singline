@@ -384,6 +384,9 @@ bash apps/desktop/e2e/linux-sing.sh
 
 **Done recently**
 
+- Karaoke on a second screen or a TV
+- The lyrics in the terminal, in tmux and in pi
+- A glass panel from the tray icon with the current song, and a shortcut of your choice
 - Your own lyrics with LRC import and an editor with a timestamp key
 - The mini-player with seek bar, chorus markers and jumping to a line, cover art, scrolling lines and an estimated word highlight
 - Sleep timer, hiding the overlay while nothing plays, and listening statistics
@@ -394,12 +397,13 @@ bash apps/desktop/e2e/linux-sing.sh
 
 **In progress**
 
-- A glass menu panel from the tray icon with the current song, and a configurable shortcut
+- Automatic updates for installed copies
+- Windows releases signed through the SignPath Foundation
 - The browser extension in the Chrome Web Store and on Firefox Add-ons
 
 **Later**
 
-- Installers with automatic updates, signed builds, and packages for winget, Homebrew, Flathub and the AUR
+- Signed macOS builds, and packages for winget, Homebrew, Flathub and the AUR
 - More lyrics sources, a choice between versions, an editor for word timing, and publishing your lyrics to LRCLIB
 - A delay per audio output, translations, themes and a mode for streaming with OBS
 
