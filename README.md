@@ -84,7 +84,7 @@ On Linux, Singline reads players through MPRIS, on Windows through the system me
 
 ### Test builds
 
-Every change on `main` produces a test build for all three systems. The newest one is always on the [test build release](../../releases/tag/nightly), with no GitHub account needed:
+Every change on `main` produces a test build for all three systems. The newest one is always on the [test build release](https://github.com/JulianRudrich/Singline/releases/tag/nightly), with no GitHub account needed:
 
 1. Download the file for your system:
    - **macOS:** `Singline-macOS.dmg`, a universal app for Apple silicon and Intel Macs
@@ -95,7 +95,7 @@ Every change on `main` produces a test build for all three systems. The newest o
    - **macOS:** if macOS refuses to open the app, go to **System Settings → Privacy & Security** and choose **Open Anyway** (on macOS 14 and earlier, right-click the app and choose **Open**). When you play music, allow Singline to control Spotify or Music.
    - **Linux:** install the package with `sudo apt install ./Singline-Linux.deb`, or make the AppImage executable with `chmod +x Singline-Linux.AppImage` and start it.
 
-Every build of `main` is also under [Actions](../../actions/workflows/ci.yml?query=branch%3Amain+is%3Asuccess), for signed-in GitHub users, together with `singline-watch`, a small tool that shows what your players report (see [Troubleshooting](#troubleshooting)).
+Every build of `main` is also under [Actions](https://github.com/JulianRudrich/Singline/actions/workflows/ci.yml?query=branch%3Amain+is%3Asuccess), for signed-in GitHub users, together with `singline-watch`, a small tool that shows what your players report (see [Troubleshooting](#troubleshooting)).
 
 ### Browser extension
 
@@ -244,7 +244,7 @@ For **Sing to find**, Whisper first turns your singing into words on your comput
 cargo run --release -p media-session --bin singline-watch
 ```
 
-Please include its output when you [report a problem](../../issues/new).
+Please include its output when you [report a problem](https://github.com/JulianRudrich/Singline/issues/new?template=bug_report.yml).
 
 **Report a problem.** Settings → About → **Report a problem** opens a pre-filled issue on GitHub with the Singline version, your system, the player and the last lines of the log. You see everything before you send it. **Show** next to **Log file** shows the log itself; the one before it is kept as `singline.old.log`.
 
@@ -393,7 +393,7 @@ Bug reports, translations and pull requests are welcome. [CONTRIBUTING.md](CONTR
 
 ## Credits
 
-- [Mike Fox](https://github.com/MikeLeonFox) built Linory, a macOS fork of this project, and contributed all of its features back in [#1](../../pull/1). Singline brings them to every system.
+- [Mike Fox](https://github.com/MikeLeonFox) built Linory, a macOS fork of this project, and contributed all of its features back in [#1](https://github.com/JulianRudrich/Singline/pull/1). Singline brings them to every system.
 - Lyrics come from [LRCLIB](https://lrclib.net), the open lyrics database created by [tranxuanthang](https://github.com/tranxuanthang) and filled by its community.
 - Singline is built with [Tauri](https://tauri.app), [Rust](https://www.rust-lang.org) and [Svelte](https://svelte.dev).
 

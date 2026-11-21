@@ -20,7 +20,7 @@ Floating synced lyrics for macOS. Keep the words in view while you work, in Spot
 
 ## Get it
 
-Download the latest ZIP from [Releases](../../releases), extract it, and open `Lyrics Overlay.app`. Play a song and allow macOS Automation access to your player when prompted. Lyrics need no player login or API key.
+Download the latest ZIP from [Releases](https://github.com/JulianRudrich/Singline/releases), extract it, and open `Lyrics Overlay.app`. Play a song and allow macOS Automation access to your player when prompted. Lyrics need no player login or API key.
 
 > [!IMPORTANT]
 > **Early, unnotarized preview.** This build has no Apple Developer ID signature and may be blocked by Gatekeeper. Only open it if you trust the source; follow [Apple's opening instructions](https://support.apple.com/guide/mac-help/open-a-mac-app-from-an-unidentified-developer-mh40616/mac). Do not disable Gatekeeper globally.
