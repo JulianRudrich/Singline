@@ -20,7 +20,7 @@ For Spotify, Apple Music, Amazon Music and YouTube Music, on Windows, macOS and 
 
 ## Contents
 
-[Features](#features) · [Supported players](#supported-players) · [Install](#install) · [Using Singline](#using-singline) · [In the terminal](#in-the-terminal) · [Where the lyrics come from](#where-the-lyrics-come-from) · [Privacy](#privacy) · [Troubleshooting](#troubleshooting) · [Building from source](#building-from-source) · [Roadmap](#roadmap) · [Contributing](#contributing) · [Credits](#credits) · [License](#license)
+[Features](#features) · [Supported players](#supported-players) · [Install](#install) · [Using Singline](#using-singline) · [In the terminal](#in-the-terminal) · [Where the lyrics come from](#where-the-lyrics-come-from) · [Privacy](#privacy) · [FAQ](#faq) · [Troubleshooting](#troubleshooting) · [Building from source](#building-from-source) · [Roadmap](#roadmap) · [Contributing](#contributing) · [Credits](#credits) · [License](#license)
 
 ## Features
 
@@ -225,6 +225,16 @@ For **Sing to find**, Whisper first turns your singing into words on your comput
 | Windows | `%APPDATA%\io.github.julianrudrich.singline` |
 | macOS | `~/Library/Application Support/io.github.julianrudrich.singline` |
 | Linux | `~/.config/io.github.julianrudrich.singline` (settings) and `~/.local/share/io.github.julianrudrich.singline` (data) |
+
+## FAQ
+
+**Is Singline free?** Yes. Singline is free software under the GPL, with no account, no ads and nothing to buy. LRCLIB, where the lyrics come from, is free as well.
+
+**Does Singline need my Spotify login or an API key?** No. Singline reads what plays from the player on your computer. Your own Spotify app is only needed for ♥, your top lists and True Shuffle.
+
+**My player is not in the list. Does Singline work with it?** On Windows and Linux, most likely: turn on Settings → General → **Also follow other players**, and Singline follows any player that reports to the system's media controls on Windows or through MPRIS on Linux, as most desktop players and browsers do. On macOS it follows Spotify, Music and the web players the browser extension supports. Tidal and Deezer in the browser extension are planned.
+
+**How is Singline related to Lyrics Overlay and Linory?** Singline is the successor of Lyrics Overlay, the native macOS app in [`apps/macos`](apps/macos). Linory is a macOS fork of it whose features came back in [#1](https://github.com/JulianRudrich/Singline/pull/1); Singline brings them to Windows, macOS and Linux.
 
 ## Troubleshooting
 
