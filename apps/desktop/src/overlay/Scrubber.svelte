@@ -1,8 +1,9 @@
 <script lang="ts">
   // The progress line under the lyrics. While the pointer is over the overlay
-  // it grows into a scrubber with the elapsed and remaining time: click or drag
-  // to seek, click a dot to jump to a chorus. It keeps its place in the layout,
-  // so the lyrics never move.
+  // it grows into a scrubber with the elapsed and remaining time, which open
+  // from its ends: click or drag to seek, click a dot to jump to a chorus. It
+  // keeps its place in the layout, so the lyrics never move, and the line moves
+  // on with a transform, so playing costs no layout.
   import { prefersReducedMotion } from "svelte/motion";
   import { fade } from "svelte/transition";
   import type { Translate } from "../lib/i18n";
@@ -35,6 +36,9 @@
   const STEPS: Record<string, number> = { ArrowLeft: -STEP, ArrowDown: -STEP, ArrowRight: STEP, ArrowUp: STEP };
 
   let rail = $state<HTMLElement>();
+  /** The natural widths of the times, which they open to. */
+  let startWidth = $state(0);
+  let endWidth = $state(0);
   /** Where the pointer holds the line while dragging, as a share of the track. */
   let held = $state<number | null>(null);
 
@@ -85,9 +89,10 @@
 </script>
 
 <div class="scrubber" class:large class:expanded class:interactive class:held={held !== null} data-no-drag={interactive ? "" : undefined}>
-  {#if expanded}
-    <span class="time" transition:fade={fadeMotion}>{formatTime(shown)}</span>
-  {/if}
+  <!-- The slider tells assistive technology the times; these are for the eye. -->
+  <span class="time start" aria-hidden="true" style:--open={startWidth > 0 ? `${startWidth}px` : null}>
+    <span bind:clientWidth={startWidth}>{formatTime(shown)}</span>
+  </span>
   <div class="rail" bind:this={rail}>
     <div
       class="bar"
@@ -106,7 +111,7 @@
       onlostpointercapture={cancel}
       onkeydown={key}
     >
-      <div class="track"><div class="fill" style:width="{fraction * 100}%"></div></div>
+      <div class="track"><div class="fill" style:--fraction={fraction.toFixed(5)}></div></div>
     </div>
     {#if interactive}
       {#each marks as mark, index (index)}
@@ -122,29 +127,58 @@
       {/each}
     {/if}
   </div>
-  {#if expanded}
-    <span class="time" transition:fade={fadeMotion}>−{formatRemaining(shown, duration)}</span>
-  {/if}
+  <span class="time end" aria-hidden="true" style:--open={endWidth > 0 ? `${endWidth}px` : null}>
+    <span bind:clientWidth={endWidth}>−{formatRemaining(shown, duration)}</span>
+  </span>
 </div>
 
 <style>
   /* Sits close to the faded bottom edge of the lyrics; its height never changes. */
   .scrubber {
+    --gap: 8px;
     flex: none;
     height: 14px;
     margin-top: -4px;
     display: flex;
     align-items: center;
-    gap: 8px;
   }
 
+  /* The times open from nothing, so the line shortens smoothly instead of jumping. */
   .time {
     flex: none;
+    max-width: 0;
+    overflow: hidden;
+    opacity: 0;
     font-size: 10px;
     font-weight: 500;
     line-height: 1;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
     color: rgb(255 255 255 / 0.62);
+    transition:
+      max-width var(--duration-dismiss) var(--ease-out),
+      opacity var(--duration-dismiss) var(--ease-out);
+  }
+
+  .time > span {
+    display: block;
+    width: max-content;
+  }
+
+  .start > span {
+    padding-right: var(--gap);
+  }
+
+  .end > span {
+    padding-left: var(--gap);
+  }
+
+  .expanded .time {
+    max-width: var(--open, 5em);
+    opacity: 1;
+    transition:
+      max-width var(--duration-pane) var(--ease-out),
+      opacity var(--duration-pane) var(--ease-out);
   }
 
   /* The whole height of the row, so the thin line is easy to hit. */
@@ -172,18 +206,20 @@
   }
 
   .track {
+    --nub: 2px;
     flex: 1;
     height: 2px;
     border-radius: 1px;
     background: rgb(255 255 255 / 0.1);
     overflow: hidden;
     transition:
-      height 0.15s cubic-bezier(0.23, 1, 0.32, 1),
-      background-color 0.15s;
+      height var(--duration-pane) var(--ease-out),
+      background-color var(--duration-pane) var(--ease-out);
   }
 
   .expanded .track,
   .held .track {
+    --nub: 4px;
     height: 4px;
     border-radius: 2px;
     background: rgb(255 255 255 / 0.16);
@@ -193,17 +229,18 @@
     box-shadow: 0 0 0 2px rgb(255 255 255 / 0.45);
   }
 
+  /* The full width, slid left by what is still to come: at least a round nub shows. */
   .fill {
-    min-width: 2px;
+    width: 100%;
     height: 100%;
     border-radius: inherit;
     background: rgb(255 255 255 / 0.35);
-    transition: background-color 0.15s;
+    transform: translateX(calc((var(--fraction) - 1) * (100% - var(--nub))));
+    transition: background-color var(--duration-pane) var(--ease-out);
   }
 
   .expanded .fill,
   .held .fill {
-    min-width: 4px;
     background: rgb(255 255 255 / 0.85);
   }
 
@@ -243,9 +280,9 @@
 
   /* The karaoke bar is used from further away. */
   .large {
+    --gap: 14px;
     height: 24px;
     margin-top: 0;
-    gap: 14px;
   }
 
   .large .time {
@@ -254,6 +291,7 @@
 
   .large.expanded .track,
   .large.held .track {
+    --nub: 6px;
     height: 6px;
     border-radius: 3px;
   }
@@ -274,6 +312,11 @@
     .fill,
     .mark::before {
       transition: none;
+    }
+
+    .time,
+    .expanded .time {
+      transition: opacity var(--duration-pane) var(--ease-out);
     }
   }
 </style>
