@@ -24,7 +24,9 @@
     | "chevronRight"
     | "mic"
     | "display"
-    | "download";
+    | "download"
+    | "alert"
+    | "document";
 </script>
 
 <script lang="ts">
@@ -57,6 +59,9 @@
   {:else if name === "about"}
     <circle cx="12" cy="12" r="9" />
     <path d="M12 11v5.5M12 7.5h.01" />
+  {:else if name === "alert"}
+    <circle cx="12" cy="12" r="9" />
+    <path d="M12 7.5V13M12 16.5h.01" />
   {:else if name === "note"}
     <path d="M9 18V5l12-2v13" />
     <circle cx="6" cy="18" r="3" />
@@ -99,7 +104,7 @@
     <path d="m20 20-4.4-4.4" />
   {:else if name === "code"}
     <path d="m8.5 7-5 5 5 5M15.5 7l5 5-5 5M13.5 4.5l-3 15" />
-  {:else if name === "license"}
+  {:else if name === "license" || name === "document"}
     <path d="M6 3h7l5 5v13H6V3Z" />
     <path d="M13 3v5h5M9 13h6M9 16.5h6" />
   {:else if name === "lyrics"}

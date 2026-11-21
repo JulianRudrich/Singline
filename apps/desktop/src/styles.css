@@ -6,7 +6,6 @@
   --separator: rgb(0 0 0 / 0.12);
   --control: rgb(0 0 0 / 0.05);
   --control-selected: #fff;
-  --warning: #b4570b;
   --window: #f4f5f6;
   /* Motion, mirrored in src/lib/motion.ts. */
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
@@ -34,7 +33,6 @@
     --separator: rgb(255 255 255 / 0.12);
     --control: rgb(255 255 255 / 0.06);
     --control-selected: rgb(255 255 255 / 0.14);
-    --warning: #f5b25b;
     --window: #1e2226;
   }
 }

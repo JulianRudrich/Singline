@@ -16,6 +16,7 @@
   import { hotkeyLabel } from "../lib/hotkey";
   import { translator, type MessageKey } from "../lib/i18n";
   import type { AppInfo, EditorState, StampEdit } from "../lib/types";
+  import Glyph from "../lib/ui/Glyph.svelte";
 
   let app = $state<AppInfo | null>(null);
   /** The song this window belongs to; it stays the same when the song changes. */
@@ -167,7 +168,7 @@
         <span class="status" aria-live="polite">{status}</span>
       </div>
       {#if message}
-        <p class="message" role="alert">{t(message, { title: editor.title })}</p>
+        <p class="message" role="alert"><Glyph name="alert" size={14} />{t(message, { title: editor.title })}</p>
       {/if}
 
       <div class="actions">
@@ -289,10 +290,20 @@
     font-variant-numeric: tabular-nums;
   }
 
+  /* No colour for problems: they stand out by brightness and the sign. */
   .message {
+    display: flex;
+    align-items: flex-start;
+    gap: 6px;
     margin: -6px 0 0;
     font-size: 11.5px;
-    color: #f5b25b;
+    line-height: 1.35;
+    color: #fff;
+  }
+
+  .message :global(svg) {
+    flex: none;
+    margin-top: 0.5px;
   }
 
   .actions {
