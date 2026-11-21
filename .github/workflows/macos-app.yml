@@ -1,12 +1,23 @@
 name: macOS app (Swift)
 
+# Only for changes to the native macOS app, which shares no code with the rest.
 on:
   push:
+    paths:
+      - apps/macos/**
+      - .github/workflows/macos-app.yml
   pull_request:
+    paths:
+      - apps/macos/**
+      - .github/workflows/macos-app.yml
   workflow_dispatch:
 
 permissions:
   contents: read
+
+concurrency:
+  group: macos-app-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
+  cancel-in-progress: true
 
 jobs:
   build:
