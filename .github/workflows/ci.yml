@@ -25,6 +25,8 @@ jobs:
   linux:
     name: Linux checks and end-to-end test
     runs-on: ubuntu-24.04
+    # About 8 minutes with a warm cache, 30 when whisper.cpp is built afresh.
+    timeout-minutes: 60
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
         with:
@@ -125,6 +127,8 @@ jobs:
             targets: ""
             tauri-args: --bundles deb,appimage
     runs-on: ${{ matrix.os }}
+    # Up to 16 minutes so far, for the macOS app for both processors.
+    timeout-minutes: 60
     defaults:
       run:
         shell: bash
@@ -255,6 +259,7 @@ jobs:
     needs: desktop
     if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     permissions:
       contents: write
     concurrency:
