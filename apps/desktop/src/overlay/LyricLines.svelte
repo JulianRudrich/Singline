@@ -1,16 +1,16 @@
 <script lang="ts">
   // The lyrics: rows around the active line, each keyed by its line, so on a
   // line change the rows scroll up and the next line grows into the active
-  // place. Neighbours are the same text, smaller and fainter; long lines shrink
-  // to fit. A press on a line jumps there, unless it moves: then it drags the
-  // window.
+  // place, while the line that is done moves on out and a new one comes in
+  // from below. Neighbours are the same text, smaller and fainter; long lines
+  // shrink to fit. A press on a line jumps there, unless it moves: then it
+  // drags the window.
   import { onDestroy, untrack } from "svelte";
   import { prefersReducedMotion } from "svelte/motion";
-  import { fade } from "svelte/transition";
   import type { Translate } from "../lib/i18n";
   import { clamp, lineFills, lineText } from "../lib/lyrics";
   import type { Measure } from "../lib/measure";
-  import { Spring } from "../lib/motion";
+  import { RowMotion, type MovingRow } from "../lib/rows";
   import type { Layout, LyricLine, SyncLevel } from "../lib/types";
   import BreakDots from "./BreakDots.svelte";
 
@@ -56,6 +56,8 @@
     scale: number;
     opacity: number;
     blur: number;
+    /** From this row's top to the next one's: how far it travels coming in or going. */
+    pitch: number;
   }
 
   const reach = $derived(layout === "context" ? 2 : layout === "focus" ? 1 : 0);
@@ -83,58 +85,42 @@
     return rows.map(({ extent, ...row }, order) => {
       const y = top + (row.active ? ACTIVE_PADDING : 0);
       top += extent + GAP;
-      return { ...row, order, y };
+      return { ...row, order, y, pitch: extent + GAP };
     });
   });
 
-  // Every row moves to its place on springs; rows keep them while they stay.
-  interface Place {
-    y: Spring;
-    scale: Spring;
-    opacity: Spring;
-    blur: Spring;
+  // Every row moves to its place on springs; rows keep them while they stay,
+  // and a row that goes keeps moving until it has faded out.
+  interface Look {
+    active: boolean;
+    order: number;
   }
-  const places = new Map<number, Place>();
+  const motion = new RowMotion<Look>();
   /** The rows there when the lyrics appear; they come in one after another. */
   const firstRows = new Set(untrack(() => slots.map((slot) => slot.index)));
   const still = $derived(prefersReducedMotion.current);
+  /** What the template draws: a fresh copy whenever a row starts leaving or goes. */
+  interface Shown {
+    index: number;
+    active: boolean;
+    leaving: boolean;
+    order: number;
+    motion: MovingRow<Look>;
+  }
+  let rows = $state.raw<Shown[]>([]);
   let frame = $state(0);
   let animation = 0;
   let last = 0;
   let lastCurrent: number | null = null;
 
   $effect(() => {
-    // Only a line change moves the rows; a new size, font or layout puts them in place at once.
-    const scrolling = current !== lastCurrent && !still;
+    const moved = lastCurrent === null ? 0 : current - lastCurrent;
+    motion.update(
+      slots.map((slot) => ({ ...slot, data: { active: slot.active, order: slot.order } })),
+      { moved, still, appear: lastCurrent === null },
+    );
     lastCurrent = current;
-    const shown = new Set<number>();
-    for (const slot of slots) {
-      shown.add(slot.index);
-      let place = places.get(slot.index);
-      if (!place) {
-        // A row scrolling in appears in its place and fades in.
-        place = {
-          y: new Spring(slot.y, { precision: 0.05 }),
-          scale: new Spring(slot.scale, { precision: 0.0005 }),
-          opacity: new Spring(firstRows.has(slot.index) ? slot.opacity : 0, { precision: 0.002 }),
-          blur: new Spring(slot.blur, { precision: 0.01 }),
-        };
-        places.set(slot.index, place);
-      }
-      place.y.target = slot.y;
-      place.scale.target = slot.scale;
-      place.opacity.target = slot.opacity;
-      place.blur.target = slot.blur;
-      // With reduced motion the rows change places at once and only fade.
-      if (!scrolling) {
-        place.y.settle();
-        place.scale.settle();
-        place.blur.settle();
-      }
-    }
-    for (const index of [...places.keys()]) {
-      if (!shown.has(index)) places.delete(index);
-    }
+    show();
     if (animation === 0) {
       last = performance.now();
       animation = requestAnimationFrame(step);
@@ -144,23 +130,28 @@
   function step(now: number) {
     const dt = Math.min(0.1, Math.max(0, now - last) / 1000);
     last = now;
-    let moving = false;
-    for (const place of places.values()) {
-      for (const spring of [place.y, place.scale, place.opacity, place.blur]) {
-        if (spring.step(dt)) moving = true;
-      }
-    }
+    const moving = motion.step(dt);
+    // Rows that faded out are gone.
+    if (motion.size !== rows.length) show();
     frame += 1;
     animation = moving ? requestAnimationFrame(step) : 0;
   }
 
+  function show() {
+    rows = motion.list().map((row) => ({
+      index: row.index,
+      active: row.data.active && !row.leaving,
+      leaving: row.leaving,
+      order: row.data.order,
+      motion: row,
+    }));
+  }
+
   onDestroy(() => cancelAnimationFrame(animation));
 
-  /** Where a row is now, on its way to its slot. `_frame` makes it follow the animation. */
-  function placed(slot: Slot, _frame: number) {
-    const place = places.get(slot.index);
-    if (!place) return { ...slot, opacity: firstRows.has(slot.index) ? slot.opacity : 0 };
-    return { y: place.y.value, scale: place.scale.value, opacity: place.opacity.value, blur: place.blur.value };
+  /** Where a row is now. `_frame` makes it follow the animation. */
+  function placed(row: MovingRow<Look>, _frame: number) {
+    return { y: row.y.value, scale: row.scale.value, opacity: row.opacity.value, blur: row.blur.value };
   }
 
   const activeLine = $derived(lines[current]);
@@ -216,23 +207,23 @@
   <p class="spoken" aria-live="polite">
     {activeLine ? activeLine.text || t("overlay.instrumentalBreak") : t("overlay.intro")}
   </p>
-  {#each slots as slot (slot.index)}
-    {@const place = placed(slot, frame)}
-    {@const line = lines[slot.index]}
+  {#each rows as row (row.index)}
+    {@const place = placed(row.motion, frame)}
+    {@const line = lines[row.index]}
+    <!-- The width follows the target size, not every frame of the animation: it only keeps long lines whole. -->
     <div
       class="row"
-      style:width="{width / Math.max(0.05, place.scale)}px"
+      style:width="{width / Math.max(0.05, row.motion.scale.target)}px"
       style:transform="translateY({place.y.toFixed(2)}px) scale({place.scale.toFixed(4)})"
       style:opacity={place.opacity.toFixed(3)}
       style:filter={place.blur > 0.01 ? `blur(${place.blur.toFixed(2)}px)` : null}
-      out:fade={{ duration: still ? 0 : 200 }}
     >
       <div
         class="inner"
-        class:reveal={firstRows.has(slot.index)}
-        style:animation-delay={firstRows.has(slot.index) ? `${0.12 + 0.05 * slot.order}s` : null}
+        class:reveal={firstRows.has(row.index)}
+        style:animation-delay={firstRows.has(row.index) ? `${0.12 + 0.05 * row.order}s` : null}
       >
-        {#if line && onjump}
+        {#if line && onjump && !row.leaving}
           <button
             class="line"
             aria-label={t("player.jumpToLine", { line: line.text || t("overlay.instrumentalBreak") })}
@@ -240,20 +231,20 @@
             onpointermove={move}
             onclick={() => jump(line)}
           >
-            {@render content(slot, line)}
+            {@render content(row.active, line)}
           </button>
         {:else}
-          <div class="line" aria-hidden="true">{@render content(slot, line)}</div>
+          <div class="line" aria-hidden="true">{@render content(row.active, line)}</div>
         {/if}
       </div>
     </div>
   {/each}
 </div>
 
-{#snippet content(slot: Slot, line: LyricLine | undefined)}
-  {#if slot.active && waiting !== null}
+{#snippet content(active: boolean, line: LyricLine | undefined)}
+  {#if active && waiting !== null}
     <BreakDots progress={waiting} size={fontSize} breathing={playing} />
-  {:else if slot.active && fills.length > 0}
+  {:else if active && fills.length > 0}
     {#each fills as word, index (index)}<span style:opacity={(0.3 + 0.7 * word.fill).toFixed(3)}>{word.text}</span>{/each}
   {:else if line}
     {lineText(line)}
