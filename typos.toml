@@ -1,0 +1,32 @@
+# Spelling check with typos (https://github.com/crate-ci/typos). The Lint
+# workflow runs it on every change; locally run `typos`, or `typos --write-changes`
+# to fix what it finds.
+
+[files]
+extend-exclude = [
+  # German texts
+  "apps/desktop/src/locales/de.json",
+  "extensions/browser/_locales/de/",
+  "apps/macos/Sources/LyricsCore/Localization.swift",
+]
+
+[default]
+extend-ignore-re = [
+  # Base64 and login state values in tests
+  '\("fo", "Zm8="\)',
+  "state=abd",
+]
+
+[default.extend-words]
+# Song titles and artists in tests and docs
+beggin = "beggin"
+believin = "believin"
+weeknd = "weeknd"
+# German and Spanish words in tests
+als = "als"
+mor = "mor"
+oficial = "oficial"
+titel = "titel"
+vor = "vor"
+# The media event and the MPRIS signal
+seeked = "seeked"

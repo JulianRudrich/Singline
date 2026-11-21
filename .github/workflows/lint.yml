@@ -1,6 +1,6 @@
 name: Lint
 
-# Quick checks next to CI, a minute or two each.
+# Quick checks next to CI, a minute or two each: the workflows and the spelling.
 on:
   push:
   pull_request:
@@ -30,3 +30,15 @@ jobs:
       - name: zizmor
         # Security problems; the settings are in .github/zizmor.yml.
         run: pipx run zizmor==1.32.0 --offline --format=github .github
+
+  spelling:
+    name: Spelling
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: typos
+        # The words it should accept are in typos.toml.
+        run: pipx run typos==1.52.2
