@@ -8,7 +8,7 @@
   import { onDestroy, untrack } from "svelte";
   import { prefersReducedMotion } from "svelte/motion";
   import type { Translate } from "../lib/i18n";
-  import { clamp, lineFills, lineText } from "../lib/lyrics";
+  import { clamp, lineFills, lineText, wordOpacity } from "../lib/lyrics";
   import type { Measure } from "../lib/measure";
   import { RowMotion, type MovingRow } from "../lib/rows";
   import type { Layout, LyricLine, SyncLevel } from "../lib/types";
@@ -39,6 +39,9 @@
 
   /** Neighbouring lines are the active line's text at this size. */
   const NEIGHBOUR = 0.78;
+  /** How bright the lines next to the active one are, and the ones beyond. */
+  const NEAR = 0.42;
+  const FAR = 0.14;
   /** Line height as a share of the font size. */
   const LINE_HEIGHT = 1.19;
   const GAP = 4;
@@ -75,7 +78,7 @@
         index,
         active,
         scale,
-        opacity: !line && !active ? 0 : active ? 1 : distance === 1 ? 0.42 : 0.14,
+        opacity: !line && !active ? 0 : active ? 1 : distance === 1 ? NEAR : FAR,
         blur: distance >= 2 ? 1.2 : 0,
         extent: lineHeight * scale + (active ? 2 * ACTIVE_PADDING : 0),
       });
@@ -231,21 +234,23 @@
             onpointermove={move}
             onclick={() => jump(line)}
           >
-            {@render content(row.active, line)}
+            {@render content(row.active, line, place.opacity)}
           </button>
         {:else}
-          <div class="line" aria-hidden="true">{@render content(row.active, line)}</div>
+          <div class="line" aria-hidden="true">{@render content(row.active, line, place.opacity)}</div>
         {/if}
       </div>
     </div>
   {/each}
 </div>
 
-{#snippet content(active: boolean, line: LyricLine | undefined)}
+<!-- `brightness` is the row's opacity right now: the words of a line that has
+     just become active start out as bright as a neighbour's. -->
+{#snippet content(active: boolean, line: LyricLine | undefined, brightness: number)}
   {#if active && waiting !== null}
     <BreakDots progress={waiting} size={fontSize} breathing={playing} />
   {:else if active && fills.length > 0}
-    {#each fills as word, index (index)}<span style:opacity={(0.3 + 0.7 * word.fill).toFixed(3)}>{word.text}</span>{/each}
+    {#each fills as word, index (index)}<span style:opacity={wordOpacity(word.fill, brightness, NEAR).toFixed(3)}>{word.text}</span>{/each}
   {:else if line}
     {lineText(line)}
   {/if}

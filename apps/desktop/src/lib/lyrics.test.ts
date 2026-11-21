@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { currentIndex, estimatedWords, lineFills, lineText, wordFills } from "./lyrics";
+import { currentIndex, estimatedWords, lineFills, lineText, UNSUNG, wordFills, wordOpacity } from "./lyrics";
 import type { LyricLine } from "./types";
 
 const lines: LyricLine[] = [
@@ -133,5 +133,30 @@ describe("lineFills", () => {
 
   it("leaves plain lyrics without word highlight", () => {
     expect(lineFills(line, 14, 10.6, "unsynced")).toEqual([]);
+  });
+});
+
+describe("wordOpacity", () => {
+  it("lights words from UNSUNG to white on a fully bright row", () => {
+    expect(wordOpacity(0, 1, 0.42)).toBeCloseTo(UNSUNG);
+    expect(wordOpacity(0.5, 1, 0.42)).toBeCloseTo(0.65);
+    expect(wordOpacity(1, 1, 0.42)).toBe(1);
+  });
+
+  it("looks like a neighbour the moment the line becomes active", () => {
+    expect(wordOpacity(0, 0.42, 0.42)).toBe(1);
+    expect(wordOpacity(0, 0.2, 0.42)).toBe(1);
+  });
+
+  it("never dims an unsung word on screen while the row brightens", () => {
+    let previous = 0.42;
+    for (let step = 0; step <= 100; step += 1) {
+      const row = 0.42 + (0.58 * step) / 100;
+      const shown = row * wordOpacity(0, row, 0.42);
+      expect(shown).toBeGreaterThanOrEqual(UNSUNG - 1e-9);
+      expect(shown).toBeLessThanOrEqual(previous + 1e-9);
+      previous = shown;
+    }
+    expect(previous).toBeCloseTo(UNSUNG);
   });
 });

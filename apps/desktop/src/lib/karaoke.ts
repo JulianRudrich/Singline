@@ -22,7 +22,7 @@ export const SHRINK = 0.8;
 /** Upcoming lines are the current line's text at this size. */
 const UPCOMING = 0.72;
 /** How bright the upcoming lines are, the next one first. */
-const UPCOMING_OPACITY = [0.46, 0.22];
+export const UPCOMING_OPACITY = [0.46, 0.22] as const;
 /** Space between two rows, as a share of the font size. */
 const GAP = 0.32;
 

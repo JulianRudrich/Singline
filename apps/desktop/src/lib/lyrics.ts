@@ -78,6 +78,25 @@ export function lineFills(line: LyricLine, nextLineTime: number | null, position
   return wordFills({ ...line, words: estimatedWords(line, nextLineTime) }, nextLineTime, position);
 }
 
+/** How bright the words of the active line end up before they are sung. */
+export const UNSUNG = 0.3;
+
+/**
+ * The opacity of one word of the active line, from how much of it has been
+ * sung and how bright its row is while it grows into the active place. A row
+ * that was a neighbour at `neighbour` opacity first looks just like one, and
+ * its unsung words settle to UNSUNG only as the row comes to full brightness,
+ * so the line never dims for a moment when it becomes active.
+ */
+export function wordOpacity(fill: number, row: number, neighbour: number): number {
+  const brightness = clamp(row, 0.001, 1);
+  const from = clamp(neighbour, UNSUNG, 0.999);
+  // How bright an unsung word looks on screen: like the row until it is brighter than a neighbour, then down to UNSUNG.
+  const shown = brightness <= from ? brightness : UNSUNG + ((from - UNSUNG) * (1 - brightness)) / (1 - from);
+  const unsung = Math.min(1, shown / brightness);
+  return unsung + (1 - unsung) * clamp(fill, 0, 1);
+}
+
 /** Display text for a line; an empty line is an instrumental break. */
 export function lineText(line: LyricLine | undefined): string {
   if (!line) return "";
