@@ -126,11 +126,6 @@ jobs:
     defaults:
       run:
         shell: bash
-    env:
-      # A Genius token for Sing to find, built in so test builds work without setup.
-      SINGLINE_GENIUS_TOKEN: ${{ secrets.SINGLINE_GENIUS_TOKEN }}
-      # Signs the update packages; without it the builds cannot update themselves.
-      TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
     steps:
       - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
       - uses: dtolnay/rust-toolchain@39008827e6b4319a349e9a42dfc90579dd25f1ca # stable
@@ -197,6 +192,12 @@ jobs:
             tar -czf dist-test/singline-watch-linux.tar.gz -C target/release singline-watch
           fi
       - name: Build the app
+        # The secrets go to this step only, not to the actions the job uses.
+        env:
+          # A Genius token for Sing to find, built in so test builds work without setup.
+          SINGLINE_GENIUS_TOKEN: ${{ secrets.SINGLINE_GENIUS_TOKEN }}
+          # Signs the update packages; without it the builds cannot update themselves.
+          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
         run: |
           # Update packages need the signing key; without it there are installers only.
           config=()
