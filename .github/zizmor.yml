@@ -1,0 +1,8 @@
+# zizmor (https://docs.zizmor.sh) audits the workflows for security problems
+# in the Lint workflow; locally run `zizmor .github`.
+rules:
+  # Asks for GitHub's newer `uses: $/...` form for the action in this
+  # repository. The Windows signing steps keep the `./` form they were set up
+  # with until a release has been signed through SignPath with them.
+  self-repository:
+    disable: true

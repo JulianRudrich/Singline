@@ -1,0 +1,32 @@
+name: Lint
+
+# Quick checks next to CI, a minute or two each.
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: lint-${{ github.ref == 'refs/heads/main' && github.sha || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  workflows:
+    name: Workflows
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@11d5960a326750d5838078e36cf38b85af677262 # v4.4.0
+        with:
+          persist-credentials: false
+      - name: actionlint
+        # Syntax, expressions and the shell scripts, with the runner's shellcheck.
+        run: |
+          go install github.com/rhysd/actionlint/cmd/actionlint@v1.7.12
+          "$(go env GOPATH)/bin/actionlint" -color
+      - name: zizmor
+        # Security problems; the settings are in .github/zizmor.yml.
+        run: pipx run zizmor==1.32.0 --offline --format=github .github
