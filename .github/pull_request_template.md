@@ -8,7 +8,7 @@
 
 ## Checklist
 
-- [ ] The checks in the README pass (`cargo fmt`, `cargo clippy`, `cargo test`, `pnpm check`, `pnpm test`, the end-to-end tests)
+- [ ] The [checks](https://github.com/JulianRudrich/Singline/blob/main/CONTRIBUTING.md#checks) pass (`cargo fmt`, `cargo clippy`, `cargo test`, `pnpm check`, `pnpm test`, the extension tests and the end-to-end tests)
 - [ ] New texts are in both `en.json` and `de.json`
 - [ ] Commit messages follow [Conventional Commits](https://www.conventionalcommits.org) (`feat: …`, `fix: …`)
 - [ ] No song lyrics, tokens or other private data in code, tests or screenshots
