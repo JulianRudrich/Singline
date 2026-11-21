@@ -181,22 +181,16 @@
     border-radius: 20px;
   }
 
+  /* Inset shadows rather than a masked gradient ring, which lost its mask in
+     the minified build and then washed over the whole window. */
   :global(html[data-titlebar="overlay"]) .window::after {
     content: "";
     position: absolute;
     inset: 0;
-    padding: 1px;
     border-radius: inherit;
-    background: linear-gradient(rgb(255 255 255 / 0.28), rgb(255 255 255 / 0.06));
-    /* Keeps only the 1 px ring; the prefixed pair comes last for WebKit. */
-    mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    mask-composite: exclude;
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.18),
+      inset 0 0 0 1px rgb(255 255 255 / 0.09);
     pointer-events: none;
   }
 

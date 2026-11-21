@@ -309,23 +309,17 @@
     background: rgb(10 10 12 / 0.3);
   }
 
-  /* A hairline edge, brighter along the top, like the settings window's. */
+  /* A hairline edge, brighter along the top, like the settings window's.
+     Drawn with inset shadows: a masked gradient ring lost its mask in the
+     minified build and then covered the whole panel. */
   .surface::after {
     content: "";
     position: absolute;
     inset: 0;
-    padding: 1px;
     border-radius: inherit;
-    background: linear-gradient(rgb(255 255 255 / 0.22), rgb(255 255 255 / 0.06));
-    /* Keeps only the 1 px ring; the prefixed pair comes last for WebKit. */
-    mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    mask-composite: exclude;
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
+    box-shadow:
+      inset 0 1px 0 rgb(255 255 255 / 0.14),
+      inset 0 0 0 1px rgb(255 255 255 / 0.08);
     pointer-events: none;
   }
 
