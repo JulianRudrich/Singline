@@ -31,7 +31,8 @@ For Spotify, Apple Music, Amazon Music and YouTube Music, on Windows, macOS and 
 - **A mini-player on hover.** Previous, play/pause and next, a seek bar with elapsed and remaining time, and markers for the chorus. Click any line to jump there.
 - **Karaoke.** The lyrics fill a second screen or a TV, white on black: the current line lights up word by word, the next ones wait below it, breaks count down with three dots, and a long intro shows the cover, title and artist. Move the mouse for the controls.
 - **Three layouts.** One line, Focus or Context, with adjustable font size, opacity, background, width and height. **Lyrics only** leaves out the song, the buttons and the timeline, even under the pointer.
-- **Stays out of your way.** The overlay floats above other windows on every desktop and never takes the focus. With click-through it becomes a ghost that lets every click pass to the window below, and Alt+Shift+L (⌥⇧L on macOS) shows or hides it. Drag it anywhere or send it to a corner.
+- **Stays out of your way.** The overlay floats above other windows on every desktop and never takes the focus. With click-through it becomes a ghost that lets every click pass to the window below, and Alt+Shift+L (⌥⇧L on macOS), or a shortcut of your choice, shows or hides it. Drag it anywhere or send it to a corner.
+- **A panel in the menu bar.** On macOS and Windows a click on Singline's icon opens a glass panel with the song playing, its controls, quick switches, the sleep timer and the other windows.
 - **In your terminal.** The line being sung in the footer of pi, the coding agent, in your tmux status bar or in a terminal of its own, word by word, for coding with music.
 - **A welcome that gets you started.** The first start shows where Singline lives, lets you choose your player, tells you as soon as Singline hears it and pairs the browser extension.
 - **Timing you can correct.** If the lyrics run early or late, move them by a quarter of a second; Singline remembers the correction for that song. A global correction makes up for your audio setup, for example Bluetooth headphones.
@@ -122,13 +123,14 @@ Your settings, lyrics and listening history stay behind; delete the folders list
 
 ## Using Singline
 
-Start Singline and play a song. Singline sits in the system tray (the menu bar on macOS) and shows the lyrics as soon as it finds them. On macOS it also appears in the Dock while one of its windows, such as the settings, is open.
+Start Singline and play a song. Singline sits in the system tray (the menu bar on macOS) and shows the lyrics as soon as it finds them. On macOS and Windows a click on its icon opens a panel with the song playing, its controls and quick switches, and a right-click opens the full menu; on Linux any click opens the menu. On macOS Singline also appears in the Dock while one of its windows, such as the settings, is open.
 
 At the first start, a short welcome shows where Singline lives, lets you choose your player and tells you when Singline hears it, and pairs the browser extension.
 
 | To … | do this |
 |---|---|
 | Show or hide the overlay | Press **Alt+Shift+L** (**⌥⇧L** on macOS), or use the tray menu |
+| Choose another shortcut | Settings → General → **Shortcut**: click it, then press the new keys |
 | Move the overlay | Drag it, or choose a corner in the tray menu under **Position** |
 | Show nothing but the lyrics | Turn on **Lyrics only** in the tray menu or under Settings → Appearance: no song, buttons, microphone or timeline |
 | Click the window behind the overlay | Turn on **Click-through** in the tray menu or under Settings → Appearance; opening Singline again turns it off |
@@ -250,7 +252,7 @@ xattr -dr com.apple.quarantine /Applications/Singline.app
 
 **The player does not report the playback position.** Without a position the lyrics cannot follow. This depends on the player; Singline tells you which one it is.
 
-**Alt+Shift+L does nothing.** Another app already uses the shortcut, and Settings says so. Show or hide the overlay from the tray menu instead. On Linux the shortcut currently works on X11 only.
+**Alt+Shift+L does nothing.** Another app already uses the shortcut, and Settings says so. Choose another one under Settings → General → **Shortcut**, or show and hide the overlay from the tray menu. On Linux the shortcut currently works on X11 only.
 
 **The overlay does not stay on top on Linux (Wayland).** GNOME does not let apps keep normal windows on top under Wayland. Start Singline with `GDK_BACKEND=x11` so it runs through XWayland.
 
