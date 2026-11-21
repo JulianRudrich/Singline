@@ -310,61 +310,9 @@ Build the installers for your system:
 pnpm build
 ```
 
-### Checks
+### Checks and development
 
-Every change has to pass these checks, which CI runs as well:
-
-```bash
-cargo fmt --all --check
-```
-
-```bash
-cargo clippy --workspace --all-targets -- -D warnings
-```
-
-```bash
-pnpm --filter singline-desktop check
-```
-
-```bash
-pnpm --filter singline-desktop test
-```
-
-```bash
-cargo test --workspace
-```
-
-```bash
-node --test "extensions/browser/test/*.test.js"
-```
-
-```bash
-bash apps/desktop/e2e/linux-smoke.sh
-```
-
-```bash
-bash apps/desktop/e2e/linux-youtube.sh
-```
-
-```bash
-bash apps/desktop/e2e/linux-sing.sh
-```
-
-`cargo test --workspace` needs the built interface (`pnpm --filter singline-desktop build`); a plain `cargo test` covers the crates only. The end-to-end check starts the app on a virtual display with a simulated Spotify and a simulated LRCLIB, and compares every line the overlay shows with the playback time. The check for Sing to find plays lines synthesized with espeak-ng instead of the microphone and needs a Whisper model; the top of [`linux-sing.sh`](apps/desktop/e2e/linux-sing.sh) says how to get one, and without it the check is skipped.
-
-### Environment variables for development
-
-| Variable | Effect |
-|---|---|
-| `SINGLINE_DATA_DIR` | Keeps settings, data and the log in this folder instead of the system location |
-| `SINGLINE_LRCLIB_URL` | Uses another LRCLIB server, for example a local test server |
-| `SINGLINE_DEBUG` | Makes the overlay report every line it shows, for end-to-end checks, and writes debug lines to the log. With it, `--karaoke` and `--menu-panel` open karaoke and the tray panel, at start or from a second launch |
-| `SINGLINE_SPOTIFY_ACCOUNTS_URL`, `SINGLINE_SPOTIFY_API_URL` | Use other Spotify servers, for example local test servers |
-| `SINGLINE_GENIUS_TOKEN` | At build time: a Genius token built into the app, so Sing to find works without setup |
-| `SINGLINE_GENIUS_URL` | Uses another Genius API server, for example a local test server |
-| `SINGLINE_MIC_FILE` | Sing to find hears this WAV file instead of the microphone, and starts by itself |
-| `SINGLINE_WHISPER_MODEL` | Uses this Whisper model file instead of downloading one |
-| `SINGLINE_WHISPER_MODEL_URL` | Downloads the Whisper model from another server |
+[CONTRIBUTING.md](CONTRIBUTING.md) lists the checks every change has to pass, which CI runs as well, how to run the end-to-end tests, and the environment variables for development.
 
 ### Project structure
 
@@ -375,10 +323,15 @@ bash apps/desktop/e2e/linux-sing.sh
 | [`crates/spotify-connect`](crates/spotify-connect) | The optional Spotify connection: login, Web API client and True Shuffle |
 | [`crates/lyrics-providers`](crates/lyrics-providers) | The LRCLIB client and the SQLite store for your own lyrics, corrections and the cache, and the song search for Sing to find (Genius) |
 | [`crates/transcription`](crates/transcription) | Sing to find: microphone capture, voice detection, the Whisper model download and transcription on the device |
-| [`apps/desktop`](apps/desktop) | The Singline app: Tauri and Rust in `src-tauri`, the Svelte interface in `src`, the end-to-end test in `e2e` |
+| [`apps/desktop`](apps/desktop) | The Singline app: Tauri and Rust in `src-tauri`, the Svelte interface in `src`, the end-to-end tests in `e2e` |
 | [`extensions/browser`](extensions/browser) | The browser extension for web players, for Chrome, Edge and Firefox |
+| [`extensions/pi`](extensions/pi) | The extension that shows the line being sung in pi's footer |
 | [`apps/macos`](apps/macos) | The native macOS app in Swift |
-| [`docs`](docs) | Roadmap, feature parity, test guide and measurements |
+| [`site`](site) | The website, published to GitHub Pages |
+| [`scripts`](scripts) | Helpers for the builds: version numbers, the update manifest and the website |
+| [`docs`](docs) | Architecture, roadmap, feature parity, test guide, release process and measurements; [docs/README.md](docs/README.md) lists them all |
+
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) explains how the parts work together.
 
 ## Roadmap
 
@@ -411,7 +364,7 @@ The detailed plan is in [docs/ROADMAP.md](docs/ROADMAP.md), and [docs/PARITY.md]
 
 ## Contributing
 
-Bug reports, translations and pull requests are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) explains how to get started, and the [code of conduct](CODE_OF_CONDUCT.md) applies to everyone. Please report security problems privately, as described in [SECURITY.md](SECURITY.md).
+Bug reports, translations and pull requests are welcome. [CONTRIBUTING.md](CONTRIBUTING.md) explains how to get started, [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) how Singline is built, and the [code of conduct](CODE_OF_CONDUCT.md) applies to everyone. Please report security problems privately, as described in [SECURITY.md](SECURITY.md).
 
 ## Credits
 
