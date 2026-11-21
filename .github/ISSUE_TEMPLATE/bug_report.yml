@@ -1,3 +1,6 @@
+# Settings → About → Report a problem opens this form with the fields system,
+# system-version, singline-version, player and logs filled in by their ids
+# (apps/desktop/src-tauri/src/report.rs). Keep those ids and the system options.
 name: Bug report
 description: Something does not work as it should.
 labels: ["bug"]
@@ -41,8 +44,8 @@ body:
     id: singline-version
     attributes:
       label: Singline version
-      description: Shown in Settings → About, or the build you downloaded.
-      placeholder: 0.3.0, or the CI run of main you downloaded
+      description: Shown in Settings → About.
+      placeholder: 0.4.0-74
     validations:
       required: true
   - type: input
@@ -54,7 +57,7 @@ body:
     id: watch
     attributes:
       label: Output of singline-watch
-      description: Run `singline-watch` (included in every build) while the song plays and paste about 20 seconds of its output. It shows what your player reports.
+      description: Run `singline-watch` while the song plays and paste about 20 seconds of its output. It shows what your player reports. Releases include it, and so does every CI run of main under Actions.
       render: text
   - type: textarea
     id: logs
