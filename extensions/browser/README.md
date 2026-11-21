@@ -8,7 +8,7 @@ One code base runs in Chrome, Edge and Firefox (128 or newer).
 
 ## Install it
 
-The extension is not in the browser stores yet. Load it from this folder:
+The extension is not in the browser stores yet. Load it from this folder: download [the repository as a ZIP file](https://github.com/JulianRudrich/Singline/archive/refs/heads/main.zip), unpack it, and use the folder `extensions/browser` inside.
 
 **Chrome, Edge, Brave, Vivaldi**
 
