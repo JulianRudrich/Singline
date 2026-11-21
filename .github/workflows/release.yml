@@ -141,7 +141,7 @@ jobs:
       - name: Point bindgen at LLVM for whisper.cpp
         # The Windows runners come with LLVM; elsewhere libclang is found by itself.
         if: runner.os == 'Windows'
-        run: echo "LIBCLANG_PATH=C:\\Program Files\\LLVM\\bin" >> "$GITHUB_ENV"
+        run: printf 'LIBCLANG_PATH=%s\n' 'C:\Program Files\LLVM\bin' >> "$GITHUB_ENV"
       - name: Configure whisper.cpp afresh
         # The cache can come from a runner with another Visual Studio, whose
         # compiler paths CMake would keep.
