@@ -11,6 +11,7 @@
   <meta property="og:url" content="https://julianrudrich.github.io/Singline/">
   <meta name="twitter:card" content="summary_large_image">
   <link rel="icon" href="images/app-icon.svg" type="image/svg+xml">
+  <script>document.documentElement.classList.add("js");</script>
   <style>
     :root {
       --bg: #000;
@@ -72,9 +73,10 @@
     .table { overflow-x: auto; background: var(--card); border: 1px solid var(--line); border-radius: 16px; }
     footer { padding: 96px 0 48px; color: var(--faint); font-size: 14px; text-align: center; }
     footer a { color: var(--muted); }
-    .reveal { opacity: 0; transform: translateY(8px); filter: blur(6px); transition: opacity 550ms var(--ease), transform 550ms var(--ease), filter 550ms var(--ease); }
-    .reveal.shown { opacity: 1; transform: none; filter: none; }
-    @media (prefers-reduced-motion: reduce) { .reveal { transform: none; filter: none; transition: opacity 300ms; } }
+    /* Sections fade in as they scroll into view; without JavaScript they simply show. */
+    .js .reveal { opacity: 0; transform: translateY(8px); filter: blur(6px); transition: opacity 550ms var(--ease), transform 550ms var(--ease), filter 550ms var(--ease); }
+    .js .reveal.shown { opacity: 1; transform: none; filter: none; }
+    @media (prefers-reduced-motion: reduce) { .js .reveal { transform: none; filter: none; transition: opacity 300ms; } }
     /* Phones: the navigation and the player table fit the screen. */
     @media (max-width: 520px) {
       .wrap { padding: 0 16px; }
