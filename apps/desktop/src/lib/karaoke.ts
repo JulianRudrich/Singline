@@ -131,6 +131,8 @@ export interface Slot {
   y: number;
   scale: number;
   opacity: number;
+  /** From this row's top to the next one's, in pixels: how far it travels coming in or going. */
+  pitch: number;
 }
 
 export interface SlotArea {
@@ -167,9 +169,10 @@ export function karaokeSlots(lines: readonly LyricLine[], current: number, area:
   const top = (height - block) / 2;
   let y = top;
   return rows.map(({ extent, ...row }) => {
-    if (row.place < 0) return { ...row, y: top - gap - extent };
-    const slot = { ...row, y };
-    y += extent + gap;
+    const pitch = extent + gap;
+    if (row.place < 0) return { ...row, y: top - pitch, pitch };
+    const slot = { ...row, y, pitch };
+    y += pitch;
     return slot;
   });
 }

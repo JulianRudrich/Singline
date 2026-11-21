@@ -140,6 +140,9 @@ describe("layout", () => {
     // The line before waits above, invisible, to move up and fade out.
     expect(previous).toMatchObject({ index: 0, place: -1, opacity: 0 });
     expect(previous?.y).toBeLessThan(current?.y ?? 0);
+    // Each row knows how far it is to the next, for rows coming in and going.
+    expect((current?.y ?? 0) + (current?.pitch ?? 0)).toBeCloseTo(next?.y ?? 0);
+    expect((previous?.y ?? 0) + (previous?.pitch ?? 0)).toBeCloseTo(current?.y ?? 0);
   });
 
   it("shrinks lines that are too wide to fit", () => {
