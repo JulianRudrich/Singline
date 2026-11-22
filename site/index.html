@@ -64,7 +64,7 @@
     .card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
     .card h3 { margin: 0 0 6px; font-size: 17px; }
     .card p { margin: 0; color: var(--muted); font-size: 15px; }
-    .shot { width: 100%; border-radius: 16px; display: block; }
+    .shot { width: 100%; height: auto; border-radius: 16px; display: block; }
     .shots { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 14px; align-items: start; }
     .caption { color: var(--faint); font-size: 14px; margin-top: 8px; text-align: center; }
     table { width: 100%; border-collapse: collapse; font-size: 15px; }
@@ -129,17 +129,17 @@
       <h2>Yours to arrange.</h2>
       <p class="sub">One line, a focus on the current line, or the lines around it. Font size, transparency and size are up to you.</p>
       <div class="shots">
-        <div><img class="shot" src="images/overlay-caption.png" alt="One line layout" loading="lazy"><div class="caption">One line</div></div>
-        <div><img class="shot" src="images/overlay-focus.png" alt="Focus layout" loading="lazy"><div class="caption">Focus</div></div>
-        <div><img class="shot" src="images/overlay-context.png" alt="Context layout" loading="lazy"><div class="caption">Context</div></div>
+        <div><img class="shot" src="images/layout-caption.png" width="1040" height="560" alt="One line layout: only the current line, lighting up word by word" loading="lazy"><div class="caption">One line</div></div>
+        <div><img class="shot" src="images/layout-focus.png" width="1040" height="560" alt="Focus layout: the current line with the lines before and after it" loading="lazy"><div class="caption">Focus</div></div>
+        <div><img class="shot" src="images/layout-context.png" width="1040" height="560" alt="Context layout: five lines that scroll, fading out towards the edges" loading="lazy"><div class="caption">Context</div></div>
       </div>
-      <img class="shot" style="margin-top:14px" src="images/settings.png" alt="The settings with the panes General, Appearance, Song &amp; timing and About" loading="lazy">
+      <img class="shot" style="margin-top:14px" src="images/settings.png" width="2400" height="1725" alt="The settings with the panes General, Appearance, Song &amp; timing and Spotify" loading="lazy">
     </section>
 
     <section class="reveal" style="text-align:center">
       <h2>Karaoke on the big screen.</h2>
       <p class="sub" style="margin-left:auto;margin-right:auto">Put the lyrics on a second screen or a TV: large, white on black, word by word, with a countdown before every line.</p>
-      <img class="shot" src="images/karaoke.gif" alt="Karaoke mode: large white lines on black, the current line lighting up word by word" loading="lazy">
+      <img class="shot" src="images/karaoke.gif" width="900" height="281" alt="Karaoke mode: large white lines on black, the current line lighting up word by word" loading="lazy">
     </section>
 
     <section id="players" class="reveal">

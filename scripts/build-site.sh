@@ -15,5 +15,6 @@ fi
 rm -rf "$out"
 mkdir -p "$out/images"
 cp -r site/. "$out/"
-cp docs/images/demo.gif docs/images/karaoke.gif docs/images/settings.png docs/images/social-preview.png "$out/images/"
+cp docs/images/demo.gif docs/images/karaoke.gif docs/images/settings.png docs/images/social-preview.png \
+  docs/images/layout-caption.png docs/images/layout-focus.png docs/images/layout-context.png "$out/images/"
 cp apps/desktop/design/app-icon.svg "$out/images/"
