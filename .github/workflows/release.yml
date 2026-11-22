@@ -74,6 +74,20 @@ jobs:
           args: --tag v${{ inputs.version }} --unreleased --strip header
         env:
           OUTPUT: RELEASE_NOTES.md
+      - name: Add which file to download
+        run: |
+          cat >> RELEASE_NOTES.md <<EOF
+
+          ## Install
+
+          | System | File |
+          |---|---|
+          | Windows | \`Singline_${VERSION}_x64-setup.exe\`, or \`Singline_${VERSION}_x64_en-US.msi\` |
+          | macOS | \`Singline_${VERSION}_universal.dmg\`, for Apple silicon and Intel Macs |
+          | Linux | \`Singline_${VERSION}_amd64.AppImage\` for any distribution, or \`Singline_${VERSION}_amd64.deb\` for Debian and Ubuntu |
+
+          [Install](https://github.com/JulianRudrich/Singline#install) in the README explains the first start on each system. \`singline-watch\` shows what your players report, for bug reports. The files without a version in their name are for automatic updates.
+          EOF
       - name: Commit and tag
         id: commit
         run: |

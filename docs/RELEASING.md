@@ -17,7 +17,7 @@ Test builds count up from the next minor version: with 0.3.0 in `tauri.conf.json
 3. Run it again without the dry run. The [Release workflow](../.github/workflows/release.yml) then:
    1. checks that the version looks like `0.4.0` and does not exist yet;
    2. writes it into `Cargo.toml`, `apps/desktop/src-tauri/Cargo.toml`, `apps/desktop/package.json` and `apps/desktop/src-tauri/tauri.conf.json`;
-   3. writes `CHANGELOG.md` and the release notes with [git-cliff](https://git-cliff.org), commits the new version and the changelog as `chore(release): 0.4.0`, tags `v0.4.0` and creates a draft release with the notes;
+   3. writes `CHANGELOG.md` and the release notes with [git-cliff](https://git-cliff.org), commits the new version and the changelog as `chore(release): 0.4.0`, tags `v0.4.0` and creates a draft release with the notes and a table of which file to download;
    4. builds the installers on Windows, macOS and Linux, signs them where it can (below), and uploads them with `singline-watch` and the update packages;
    5. writes `latest.json`, the manifest for automatic updates, publishes the release and starts the [Website workflow](../.github/workflows/pages.yml).
 4. Look over the release page and the website.
