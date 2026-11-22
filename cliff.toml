@@ -38,5 +38,7 @@ commit_parsers = [
   { message = "^docs", group = "<!-- 5 -->Documentation" },
   { message = "^test", group = "<!-- 6 -->Tests" },
   { message = "^chore\\(release\\)", skip = true },
+  # Dependabot's updates, apart from the rest.
+  { message = "^(build|ci|chore)\\(deps(-dev)?\\)", group = "<!-- 8 -->Dependencies" },
   { message = "^(chore|ci|build)", group = "<!-- 7 -->Maintenance" },
 ]

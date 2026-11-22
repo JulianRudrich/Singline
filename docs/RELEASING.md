@@ -36,6 +36,7 @@ git-cliff turns the subjects of the commits since the last tag into the release 
 | `docs` | Documentation |
 | `test` | Tests |
 | `chore`, `ci`, `build` | Maintenance |
+| `build(deps)`, `ci(deps)` | Dependencies, the updates from Dependabot |
 
 Commits that do not follow Conventional Commits are left out, and so is `chore(release)`. A good subject therefore reads well on its own: "fix(overlay): keep the lines in view after a seek", not "fix stuff".
 
