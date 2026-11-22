@@ -24,6 +24,12 @@ updates:
         patterns: ["tauri*"]
       rust:
         update-types: [minor, patch]
+    ignore:
+      # zbus 6 drops the blocking API that the MPRIS backend and its test
+      # player are built on. Moving them to the async API is a change of its
+      # own; until then zbus stays on 5.
+      - dependency-name: zbus
+        update-types: ["version-update:semver-major"]
 
   - package-ecosystem: npm
     directory: /
