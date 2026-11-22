@@ -12,7 +12,7 @@ Linux is tested automatically in CI. Windows and macOS need a real device. One p
 
 The builds are not signed yet:
 
-- **macOS:** drag the app from the `.dmg` into Applications. If macOS refuses to open it, go to **System Settings → Privacy & Security** and choose **Open Anyway** (on macOS 14 and earlier, right-click the app and choose **Open**). For the tool, run `tar -xzf singline-watch-macos.tar.gz` and `xattr -d com.apple.quarantine singline-watch`.
+- **macOS:** drag the app from the `.dmg` into Applications. If macOS refuses to open it, go to **System Settings → Privacy & Security** and choose **Open Anyway** (on macOS 14 and earlier, right-click the app and choose **Open**). If it says the app is damaged, run `xattr -dr com.apple.quarantine /Applications/Singline.app`. For the tool, run `tar -xzf singline-watch-macos.tar.gz` and `xattr -d com.apple.quarantine singline-watch`.
 - **Windows:** if SmartScreen appears, choose **More info** → **Run anyway**.
 
 ## 1. What the players report (measurement B)
