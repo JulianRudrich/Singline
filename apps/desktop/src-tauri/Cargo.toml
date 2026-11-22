@@ -46,7 +46,7 @@ crossterm = "0.29"
 terminal-colorsaurus = "1.0"
 
 [target.'cfg(windows)'.dependencies]
-windows-version = "0.1"
+windows-version = "0.100"
 
 [lints]
 workspace = true
