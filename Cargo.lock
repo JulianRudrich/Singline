@@ -2734,13 +2734,13 @@ dependencies = [
 name = "media-session"
 version = "0.3.0-alpha.0"
 dependencies = [
- "getrandom 0.3.4",
+ "getrandom 0.4.3",
  "httparse",
  "log",
  "lyrics-core",
  "serde",
  "serde_json",
- "sha2 0.10.9",
+ "sha2 0.11.1",
  "thiserror 2.0.21",
  "windows",
  "zbus",
@@ -4658,15 +4658,15 @@ dependencies = [
 name = "spotify-connect"
 version = "0.3.0-alpha.0"
 dependencies = [
- "base64 0.22.1",
+ "base64 0.23.1",
  "fastrand",
  "futures-util",
- "getrandom 0.3.4",
+ "getrandom 0.4.3",
  "keyring",
  "reqwest 0.12.28",
  "serde",
  "serde_json",
- "sha2 0.10.9",
+ "sha2 0.11.1",
  "thiserror 2.0.21",
  "tokio",
  "wiremock",
@@ -5599,7 +5599,7 @@ dependencies = [
  "cpal",
  "hound",
  "reqwest 0.12.28",
- "sha2 0.10.9",
+ "sha2 0.11.1",
  "thiserror 2.0.21",
  "tokio",
  "whisper-rs",
