@@ -23,7 +23,7 @@
     "targets": "all",
     "category": "Music",
     "shortDescription": "Synced lyrics above your other windows",
-    "longDescription": "Singline shows synced lyrics for Spotify, Apple Music and Amazon Music in a small window above your other apps.",
+    "longDescription": "Singline shows synced lyrics for Spotify, Apple Music, Amazon Music and YouTube Music in a small window above your other apps.",
     "copyright": "Copyright © 2026 Julian Rudrich",
     "license": "GPL-3.0-or-later",
     "licenseFile": "../../../LICENSE",
