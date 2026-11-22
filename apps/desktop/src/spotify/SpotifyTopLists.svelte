@@ -219,7 +219,7 @@
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    color: rgb(255 255 255 / 0.4);
+    color: rgb(255 255 255 / 0.5);
   }
 
   ol {
@@ -248,7 +248,7 @@
     font-size: 11px;
     text-align: right;
     font-variant-numeric: tabular-nums;
-    color: rgb(255 255 255 / 0.4);
+    color: rgb(255 255 255 / 0.5);
   }
 
   .names {

@@ -375,7 +375,7 @@
   .player {
     font-size: 10.5px;
     line-height: 1.35;
-    color: rgb(255 255 255 / 0.4);
+    color: rgb(255 255 255 / 0.5);
   }
 
   /* The scrubber pulls itself up 4 px under the overlay's lyrics. */

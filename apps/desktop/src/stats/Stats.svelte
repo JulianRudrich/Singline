@@ -315,7 +315,7 @@
 
   .tile-detail {
     font-size: 11px;
-    color: rgb(255 255 255 / 0.45);
+    color: rgb(255 255 255 / 0.55);
     white-space: pre;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -348,7 +348,7 @@
     font-size: 11px;
     font-weight: 500;
     text-align: right;
-    color: rgb(255 255 255 / 0.45);
+    color: rgb(255 255 255 / 0.55);
     font-variant-numeric: tabular-nums;
   }
 

@@ -169,14 +169,14 @@
   .caption {
     flex: none;
     font-size: 10px;
-    color: rgb(255 255 255 / 0.35);
+    color: rgb(255 255 255 / 0.5);
   }
 
   .badge {
     flex: none;
     display: grid;
     place-items: center;
-    color: rgb(255 255 255 / 0.35);
+    color: rgb(255 255 255 / 0.5);
   }
 
   .sing {

@@ -116,7 +116,7 @@
   }
 
   .shortcut {
-    color: rgb(255 255 255 / 0.4);
+    color: rgb(255 255 255 / 0.5);
   }
 
   .chevron {

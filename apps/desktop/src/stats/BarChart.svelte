@@ -176,7 +176,7 @@
 
   .tick,
   .label {
-    fill: rgb(255 255 255 / 0.45);
+    fill: rgb(255 255 255 / 0.55);
     font-size: 10px;
     font-variant-numeric: tabular-nums;
   }

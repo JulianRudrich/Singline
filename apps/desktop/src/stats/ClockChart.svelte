@@ -183,7 +183,7 @@
   }
 
   .axis {
-    fill: rgb(255 255 255 / 0.45);
+    fill: rgb(255 255 255 / 0.55);
     font-size: 10px;
   }
 
@@ -212,7 +212,7 @@
     align-items: center;
     gap: 3px;
     font-size: 10px;
-    color: rgb(255 255 255 / 0.45);
+    color: rgb(255 255 255 / 0.55);
   }
 
   .swatch {
