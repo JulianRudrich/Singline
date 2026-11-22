@@ -2,6 +2,7 @@
   import type { MessageKey, Translate } from "../lib/i18n";
   import type { AppInfo, Playback, SourcePreference } from "../lib/types";
   import Glyph from "../lib/ui/Glyph.svelte";
+  import { radioMove } from "../lib/ui/radio";
 
   // The players to choose from, each with where it plays on this system, and a
   // live line underneath that says whether Singline already sees a song.
@@ -23,6 +24,18 @@
 
   const mac = $derived(platform === "macos");
   const services: SourcePreference[] = ["spotify", "appleMusic", "amazonMusic", "youTubeMusic"];
+  const choices: SourcePreference[] = ["automatic", ...services];
+  let group = $state<HTMLElement>();
+
+  // The arrow keys choose the next player, as in any radio group.
+  function keydown(event: KeyboardEvent) {
+    const next = radioMove(event.key, choices.indexOf(source), choices.length);
+    const choice = next === null ? undefined : choices[next];
+    if (next === null || !choice) return;
+    event.preventDefault();
+    onchange(choice);
+    group?.querySelectorAll<HTMLElement>("[role=radio]")[next]?.focus();
+  }
 
   /** Where the player runs here: its app, the browser through the extension, or both. */
   function where(choice: SourcePreference): MessageKey {
@@ -57,15 +70,17 @@
   });
 </script>
 
-<div class="choices" role="radiogroup" aria-label={t("welcome.playerTitle")}>
-  {#each ["automatic", ...services] as SourcePreference[] as choice (choice)}
+<div class="choices" role="radiogroup" aria-label={t("welcome.playerTitle")} bind:this={group}>
+  {#each choices as choice (choice)}
     <button
       type="button"
       role="radio"
       aria-checked={choice === source}
+      tabindex={choice === source ? 0 : -1}
       class="choice"
       class:wide={choice === "automatic"}
       onclick={() => onchange(choice)}
+      onkeydown={keydown}
     >
       <span class="name">{t(`source.${choice}` as MessageKey)}</span>
       <span class="where">{t(where(choice))}</span>

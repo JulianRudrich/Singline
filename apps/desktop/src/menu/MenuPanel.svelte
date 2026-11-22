@@ -13,6 +13,7 @@
   import { SeekHold } from "../lib/player";
   import type { AppInfo, Playback, Settings, SleepView } from "../lib/types";
   import Mark from "../lib/ui/Mark.svelte";
+  import { radioMove } from "../lib/ui/radio";
   import Toggle from "../lib/ui/Toggle.svelte";
   import Controls from "../overlay/Controls.svelte";
   import Cover from "../overlay/Cover.svelte";
@@ -105,6 +106,20 @@
 
   async function chooseSleep(choice: string) {
     sleep = await api.setSleepTimer(choice);
+  }
+
+  let sleepGroup = $state<HTMLElement>();
+
+  // The arrow keys move through the choices, as in any radio group; "End of track" needs a song.
+  function sleepKey(event: KeyboardEvent) {
+    if (!sleep) return;
+    const { choices, endOfTrack } = sleep;
+    const next = radioMove(event.key, choices.indexOf(sleep.choice), choices.length, (index) => choices[index] !== "end" || endOfTrack);
+    const choice = next === null ? undefined : choices[next];
+    if (next === null || !choice) return;
+    event.preventDefault();
+    void chooseSleep(choice);
+    sleepGroup?.querySelectorAll<HTMLElement>("[role=radio]")[next]?.focus();
   }
 
   /** The panel would close anyway once the new window takes the focus; this is quicker. */
@@ -254,16 +269,24 @@
       </MenuRow>
       <MenuRow icon="moon" title={t("tray.sleep")} detail={sleepDetail} expanded={sleepOpen} onclick={() => (sleepOpen = !sleepOpen)} />
       {#if sleepOpen && sleep}
-        <div class="sleep" role="radiogroup" aria-label={t("tray.sleep")} in:dropIn={{ reduced: reducedMotion.current }}>
+        <div
+          class="sleep"
+          role="radiogroup"
+          aria-label={t("tray.sleep")}
+          bind:this={sleepGroup}
+          in:dropIn={{ reduced: reducedMotion.current }}
+        >
           {#each sleep.choices as choice (choice)}
             {@const selected = sleep.choice === choice}
             <button
               type="button"
               role="radio"
               aria-checked={selected}
+              tabindex={selected ? 0 : -1}
               class:selected
               disabled={choice === "end" && !sleep.endOfTrack}
               onclick={() => chooseSleep(choice)}
+              onkeydown={sleepKey}
             >
               {sleepLabel(choice)}
             </button>
