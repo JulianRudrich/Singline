@@ -5,6 +5,9 @@
   import { onMount } from "svelte";
   import { api, subscribe } from "../lib/api";
   import { translator } from "../lib/i18n";
+  import Button from "../lib/ui/Button.svelte";
+  import Glyph from "../lib/ui/Glyph.svelte";
+  import Toggle from "../lib/ui/Toggle.svelte";
   import { onSpotifyStatus, spotify } from "../spotify/api";
   import { activityText, isError, keptName, noticeText, onShuffle, shuffle, sourceName, type ShuffleView } from "./api";
 
@@ -34,6 +37,15 @@
     if (!view.sourcesLoaded) return { text: t("shuffle.loadingSources"), error: false, reset: false };
     return null;
   });
+
+  async function setKeepPlaying(on: boolean) {
+    view = await shuffle.setKeepPlaying(on);
+  }
+
+  /** The whole row works the switch; the switch handles its own clicks. */
+  function keepPlayingRow(event: MouseEvent) {
+    if (view && !(event.target as HTMLElement).closest("button")) void setKeepPlaying(!view.keepPlaying);
+  }
 
   async function keep() {
     if (!view) return;
@@ -83,7 +95,9 @@
     {#if !view.connected}
       <section class="card">
         <p class="hint">{t("shuffle.connectHint")}</p>
-        <button class="button" onclick={() => api.openSettings()}>{t("shuffle.openSettings")} ›</button>
+        <span class="open">
+          <Button onclick={() => api.openSettings()}>{t("shuffle.openSettings")}<Glyph name="chevronRight" size={12} /></Button>
+        </span>
       </section>
     {:else}
       <section class="card">
@@ -164,7 +178,9 @@
       </section>
 
       <section class="card rows">
-        <label class="row">
+        <!-- The switch is what the keyboard reaches; the row only widens where a click works. -->
+        <!-- svelte-ignore a11y_click_events_have_key_events, a11y_no_static_element_interactions -->
+        <div class="row" onclick={keepPlayingRow}>
           <svg class="row-icon" width="17" height="17" viewBox="0 0 24 24" aria-hidden="true">
             <path d="M12 12c-2-2.7-3.6-4-5.5-4a4 4 0 0 0 0 8c1.9 0 3.5-1.3 5.5-4Zm0 0c2 2.7 3.6 4 5.5 4a4 4 0 0 0 0-8c-1.9 0-3.5 1.3-5.5 4Z" />
           </svg>
@@ -172,14 +188,8 @@
             <span>{t("shuffle.keepPlaying")}</span>
             <span class="hint">{t("shuffle.keepPlayingHint")}</span>
           </span>
-          <input
-            class="switch"
-            type="checkbox"
-            role="switch"
-            checked={view.keepPlaying}
-            onchange={async (event) => (view = await shuffle.setKeepPlaying(event.currentTarget.checked))}
-          />
-        </label>
+          <Toggle label={t("shuffle.keepPlaying")} checked={view.keepPlaying} onchange={setKeepPlaying} />
+        </div>
         {#if view.inShuffle}
           <button class="row" disabled={busy} onclick={async () => (view = await shuffle.removeCurrent())}>
             <svg class="row-icon" width="17" height="17" viewBox="0 0 24 24" aria-hidden="true">
@@ -210,9 +220,20 @@
 {/if}
 
 <style>
+  /* Neutral black glass, as in Your music. */
+  :global(html[data-view="shuffle"]) {
+    color-scheme: dark;
+    background: #111113;
+  }
+
   :global(html[data-view="shuffle"] body) {
-    background: #141618;
+    min-height: 100%;
+    height: auto;
     color: #fff;
+    background:
+      radial-gradient(110% 70% at 0% 0%, rgb(255 255 255 / 0.07), transparent 62%),
+      linear-gradient(160deg, #1c1d20 0%, #121214 48%, #0a0a0b 100%);
+    background-attachment: fixed;
   }
 
   .shuffle {
@@ -232,6 +253,7 @@
     margin: 0;
     font-size: 22px;
     font-weight: 600;
+    letter-spacing: -0.01em;
   }
 
   .subtitle,
@@ -257,6 +279,16 @@
     padding: 6px;
   }
 
+  .open {
+    align-self: flex-start;
+  }
+
+  .open :global(.button) {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
   button {
     border: 0;
     background: none;
@@ -264,12 +296,13 @@
     font: inherit;
     cursor: pointer;
     transition:
-      transform 0.12s ease,
-      background-color 0.15s ease;
+      transform var(--duration-press) var(--ease-out),
+      background-color var(--duration-press) var(--ease-out),
+      color var(--duration-press) var(--ease-out);
   }
 
   button:active:not(:disabled) {
-    transform: scale(0.97);
+    transform: scale(var(--press-scale-subtle));
   }
 
   button:disabled {
@@ -277,13 +310,10 @@
     opacity: 0.45;
   }
 
-  .button {
-    align-self: flex-start;
-    padding: 5px 12px;
-    border-radius: 8px;
-    border: 1px solid rgb(255 255 255 / 0.12);
-    background: rgb(255 255 255 / 0.1);
-    font-weight: 500;
+  button:focus-visible,
+  select:focus-visible {
+    outline: 2px solid rgb(255 255 255 / 0.7);
+    outline-offset: 2px;
   }
 
   .picker {
@@ -305,10 +335,15 @@
     font: inherit;
     appearance: none;
     -webkit-appearance: none;
+    transition: border-color var(--duration-press) var(--ease-out);
+  }
+
+  select:hover:not(:disabled) {
+    border-color: rgb(255 255 255 / 0.24);
   }
 
   option {
-    background: #1c1f22;
+    background: #1c1c1e;
     color: #fff;
   }
 
@@ -319,6 +354,10 @@
     width: 32px;
     border-radius: 8px;
     color: rgb(255 255 255 / 0.55);
+  }
+
+  .icon:hover:not(:disabled) {
+    color: #fff;
   }
 
   .icon.on {
@@ -346,49 +385,47 @@
   .mix-row {
     display: flex;
     align-items: center;
-    gap: 8px;
-    height: 26px;
+    gap: 9px;
+    height: 28px;
     padding: 0 10px;
     font-size: 12px;
   }
 
+  /* A white box with a dark tick, drawn here so no system colour shows. */
   .mix-row input {
-    accent-color: #fff;
-  }
-
-  .switch {
     flex: none;
-    position: relative;
-    width: 32px;
-    height: 18px;
+    width: 15px;
+    height: 15px;
     margin: 0;
-    border-radius: 9px;
-    background: rgb(255 255 255 / 0.18);
-    cursor: pointer;
+    border: 1.5px solid rgb(255 255 255 / 0.4);
+    border-radius: 4px;
+    background: transparent no-repeat center / 11px 11px;
     appearance: none;
     -webkit-appearance: none;
-    transition: background-color 0.15s ease;
+    cursor: pointer;
+    transition:
+      background-color var(--duration-press) var(--ease-out),
+      border-color var(--duration-press) var(--ease-out);
   }
 
-  .switch::after {
-    content: "";
-    position: absolute;
-    top: 2px;
-    left: 2px;
-    width: 14px;
-    height: 14px;
-    border-radius: 50%;
-    background: #fff;
-    transition: transform 0.15s ease;
+  .mix-row input:hover:not(:disabled) {
+    border-color: rgb(255 255 255 / 0.7);
   }
 
-  .switch:checked {
-    background: rgb(255 255 255 / 0.9);
+  .mix-row input:checked {
+    border-color: #fff;
+    background-color: #fff;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 12 12'%3E%3Cpath d='M2.5 6.2l2.3 2.3 4.7-5' fill='none' stroke='%23111' stroke-width='1.8' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
   }
 
-  .switch:checked::after {
-    background: #141618;
-    transform: translateX(14px);
+  .mix-row input:focus-visible {
+    outline: 2px solid rgb(255 255 255 / 0.7);
+    outline-offset: 2px;
+  }
+
+  .mix-row input:disabled {
+    opacity: 0.45;
+    cursor: default;
   }
 
   .play {
@@ -404,6 +441,10 @@
     font-weight: 600;
   }
 
+  .play:hover:not(:disabled) {
+    background: rgb(255 255 255 / 0.88);
+  }
+
   .play:disabled {
     opacity: 0.55;
   }
@@ -415,6 +456,7 @@
     color: rgb(255 255 255 / 0.55);
   }
 
+  /* No colour for problems: they stand out by brightness. */
   .status.error {
     color: rgb(255 255 255 / 0.85);
   }
@@ -426,6 +468,10 @@
     text-decoration: underline;
     text-decoration-color: rgb(255 255 255 / 0.4);
     text-underline-offset: 2px;
+  }
+
+  .text:hover {
+    text-decoration-color: #fff;
   }
 
   .up-next {
@@ -456,6 +502,11 @@
     background: rgb(255 255 255 / 0.08);
   }
 
+  .track:focus-visible,
+  .row:focus-visible {
+    outline-offset: -2px;
+  }
+
   .artist {
     margin-left: 7px;
     color: rgb(255 255 255 / 0.55);
@@ -475,6 +526,11 @@
     padding: 8px 10px;
     border-radius: 9px;
     text-align: left;
+    transition: background-color var(--duration-press) var(--ease-out);
+  }
+
+  div.row {
+    cursor: default;
   }
 
   .row-icon {
@@ -511,10 +567,6 @@
   }
 
   @media (prefers-reduced-motion: reduce) {
-    button {
-      transition: none;
-    }
-
     .spinner {
       animation-duration: 2.4s;
     }
