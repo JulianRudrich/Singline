@@ -20,7 +20,7 @@ sha2 = "0.11"
 thiserror.workspace = true
 
 [target.'cfg(target_os = "linux")'.dependencies]
-zbus = "5"
+zbus = "6"
 
 [target.'cfg(windows)'.dependencies]
 windows = { version = "0.62", features = ["Media_Control", "Foundation", "Foundation_Collections", "Storage_Streams"] }
