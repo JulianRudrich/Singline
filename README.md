@@ -284,7 +284,7 @@ Please include its output when you [report a problem](https://github.com/JulianR
 
 ## Building from source
 
-You need Rust 1.88 or later, Node.js 22 and pnpm 10, plus CMake, a C++ compiler and libclang for whisper.cpp, which Sing to find uses (on macOS the Xcode command line tools, on Windows Visual Studio's C++ tools and LLVM). On Linux you also need the WebKitGTK and ALSA development files; on Debian and Ubuntu:
+You need Rust 1.89 or later, Node.js 22 and pnpm 10, plus CMake, a C++ compiler and libclang for whisper.cpp, which Sing to find uses (on macOS the Xcode command line tools, on Windows Visual Studio's C++ tools and LLVM). On Linux you also need the WebKitGTK and ALSA development files; on Debian and Ubuntu:
 
 ```bash
 sudo apt install libwebkit2gtk-4.1-dev libgtk-3-dev libayatana-appindicator3-dev librsvg2-dev libxdo-dev libasound2-dev libclang-dev cmake

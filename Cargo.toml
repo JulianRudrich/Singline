@@ -7,8 +7,8 @@ default-members = ["crates/lyrics-core", "crates/media-session", "crates/lyrics-
 [workspace.package]
 version = "0.3.0-alpha.0"
 edition = "2021"
-# whisper-rs, for Sing to find, needs 1.88.
-rust-version = "1.88"
+# rusqlite, for the lyrics store, needs 1.89.
+rust-version = "1.89"
 license = "GPL-3.0-or-later"
 authors = ["Julian Rudrich"]
 repository = "https://github.com/JulianRudrich/Singline"

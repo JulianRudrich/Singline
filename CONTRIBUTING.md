@@ -12,7 +12,7 @@ Thanks for helping. Singline is a small project, and every bug report, translati
 
 ## Setting up
 
-You need [Rust](https://rustup.rs) 1.88 or later, Node.js 22 and pnpm 10 (`corepack enable` sets up the version the repository asks for). whisper.cpp, which Sing to find uses, also needs CMake, a C++ compiler and libclang:
+You need [Rust](https://rustup.rs) 1.89 or later, Node.js 22 and pnpm 10 (`corepack enable` sets up the version the repository asks for). whisper.cpp, which Sing to find uses, also needs CMake, a C++ compiler and libclang:
 
 - **Linux** (Debian and Ubuntu):
 
