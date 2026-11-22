@@ -371,6 +371,7 @@
     white-space: nowrap;
   }
 
+  /* Meters grow in, and ease to a new length when the numbers change. */
   .meter {
     grid-column: 2 / -1;
     height: 3px;
@@ -378,6 +379,14 @@
     min-width: 3px;
     border-radius: 2px;
     background: rgb(255 255 255 / 0.85);
+    transition: width var(--duration-reveal) var(--ease-out);
+    animation: meter-in var(--duration-reveal) var(--ease-out) both;
+  }
+
+  @keyframes meter-in {
+    from {
+      width: 0;
+    }
   }
 
   .reveal {
@@ -410,6 +419,11 @@
 
     .content {
       transition: none;
+    }
+
+    .meter {
+      transition: none;
+      animation: none;
     }
   }
 </style>

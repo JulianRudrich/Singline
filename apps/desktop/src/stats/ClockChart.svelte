@@ -108,7 +108,7 @@
             width={cell}
             height={ROW}
             rx="2.5"
-            fill-opacity={STEPS[heatStep(seconds(day, hour), max)]}
+            style:fill-opacity={STEPS[heatStep(seconds(day, hour), max)]}
           />
         {/each}
       {/each}
@@ -164,8 +164,16 @@
     box-shadow: 0 0 0 2px rgb(255 255 255 / 0.5);
   }
 
+  /* Another range fades each hour to its new step. */
   .cell {
     fill: #fff;
+    transition: fill-opacity var(--duration-reveal) var(--ease-out);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .cell {
+      transition-duration: var(--duration-pane);
+    }
   }
 
   .focus {

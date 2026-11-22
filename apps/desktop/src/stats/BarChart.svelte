@@ -120,8 +120,14 @@
         <line class="grid" class:base={value === 0} x1={LEFT} x2={width} y1={y(value) + 0.5} y2={y(value) + 0.5} />
         <text class="tick" x={LEFT - 8} y={y(value)} dy="0.32em" text-anchor="end">{tickLabel(value)}</text>
       {/each}
-      {#each buckets as bucket, index (bucket.start)}
-        <path class="bar" class:dim={active !== null && active !== index} d={bar(index, bucket.seconds)} />
+      <!-- Keyed by the range too, so all bars of another range grow in, also those of days both show. -->
+      {#each buckets as bucket, index (`${range}|${bucket.start}`)}
+        <path
+          class="bar"
+          class:dim={active !== null && active !== index}
+          style:animation-delay="{Math.min(index, 24) * 14}ms"
+          d={bar(index, bucket.seconds)}
+        />
         {#if index % every === 0}
           <text class="label" x={LEFT + index * band + band / 2} y={BASE + 15} text-anchor="middle">{axis[index]}</text>
         {/if}
@@ -175,10 +181,32 @@
     font-variant-numeric: tabular-nums;
   }
 
+  /* New bars, as for another range, grow from the baseline one after another. */
   .bar {
     fill: #fff;
     opacity: 0.9;
-    transition: opacity 120ms ease-out;
+    transform-box: fill-box;
+    transform-origin: 50% 100%;
+    transition: opacity var(--duration-press) var(--ease-out);
+    animation: grow var(--duration-reveal) var(--ease-out) both;
+  }
+
+  @keyframes grow {
+    from {
+      transform: scaleY(0);
+    }
+  }
+
+  @keyframes appear {
+    from {
+      opacity: 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .bar {
+      animation-name: appear;
+    }
   }
 
   .bar.dim {
