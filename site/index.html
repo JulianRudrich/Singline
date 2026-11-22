@@ -104,7 +104,7 @@
       <h1>Sing along to<br>every song.</h1>
       <p class="lead">Singline shows synced lyrics in a small window above everything else. Word by word, for Spotify, Apple Music, Amazon Music and YouTube Music.</p>
       <div class="actions">
-        <a class="button primary" id="download" href="https://github.com/JulianRudrich/Singline/releases/latest">Download Singline</a>
+        <a class="button primary download" id="download" href="https://github.com/JulianRudrich/Singline/releases/latest">Download Singline</a>
         <a class="button secondary" href="https://github.com/JulianRudrich/Singline">View on GitHub</a>
       </div>
       <p class="note" id="download-note">Free and open source · Windows, macOS and Linux</p>
@@ -171,7 +171,7 @@
       <h2>Free and open source.</h2>
       <p class="sub" style="margin-left:auto;margin-right:auto">Singline is licensed under the GPL and built in the open. Lyrics come from LRCLIB, the open lyrics database.</p>
       <div class="actions">
-        <a class="button primary" href="https://github.com/JulianRudrich/Singline/releases/latest">Download</a>
+        <a class="button primary download" href="https://github.com/JulianRudrich/Singline/releases/latest">Download</a>
         <a class="button secondary" href="https://github.com/JulianRudrich/Singline">Source code</a>
       </div>
     </section>
@@ -185,23 +185,49 @@
   </div>
 
   <script>
-    // Point the download button at the installer for this system, if a release has one.
-    const platform = (navigator.userAgentData?.platform || navigator.platform || navigator.userAgent).toLowerCase();
-    const system = platform.includes("win") ? "Windows" : platform.includes("mac") ? "macOS" : platform.includes("linux") ? "Linux" : null;
-    const patterns = { Windows: /x64-setup\.exe$/, macOS: /\.dmg$/, Linux: /\.AppImage$/ };
-    if (system) {
-      fetch("https://api.github.com/repos/JulianRudrich/Singline/releases/latest")
-        .then((response) => (response.ok ? response.json() : null))
-        .then((release) => {
-          const asset = release?.assets?.find((item) => patterns[system].test(item.name));
-          if (!asset) return;
-          const button = document.getElementById("download");
-          button.href = asset.browser_download_url;
-          button.textContent = `Download for ${system}`;
-          document.getElementById("download-note").textContent = `Version ${release.tag_name.replace(/^v/, "")} · Free and open source · Other systems on GitHub`;
-        })
-        .catch(() => {});
+    // Point the download buttons at the installer for this system: from the
+    // newest release, or from the test build while there is none. Phones and
+    // tablets get the release page instead.
+    const releases = "https://api.github.com/repos/JulianRudrich/Singline/releases";
+    const agent = navigator.userAgent;
+    const platform = (navigator.userAgentData?.platform || navigator.platform || agent).toLowerCase();
+    const mobile = navigator.userAgentData?.mobile || /android|iphone|ipad|ipod/i.test(agent) || (platform.includes("mac") && navigator.maxTouchPoints > 1);
+    const system = mobile ? null : platform.includes("win") ? "Windows" : platform.includes("mac") ? "macOS" : platform.includes("linux") ? "Linux" : null;
+    const patterns = { Windows: /-setup\.exe$/, macOS: /\.dmg$/, Linux: /\.AppImage$/ };
+
+    async function newestRelease() {
+      for (const [path, test] of [["latest", false], ["tags/nightly", true]]) {
+        const response = await fetch(`${releases}/${path}`);
+        if (response.ok) return { release: await response.json(), test };
+      }
+      return null;
     }
+
+    function link(text, href) {
+      const element = document.createElement("a");
+      element.href = href;
+      element.textContent = text;
+      return element;
+    }
+
+    newestRelease()
+      .then((found) => {
+        if (!found) return;
+        const { release, test } = found;
+        const asset = system ? release.assets?.find((item) => patterns[system].test(item.name)) : null;
+        for (const button of document.querySelectorAll(".download")) {
+          button.href = asset ? asset.browser_download_url : release.html_url;
+        }
+        if (asset) document.getElementById("download").textContent = `Download for ${system}`;
+        const version = test ? release.name?.match(/\d+\.\d+\.\d+\S*/)?.[0] : release.tag_name.replace(/^v/, "");
+        const parts = test
+          ? [version ? `Test build ${version}, not signed yet` : "Test build, not signed yet", link("How to install", "https://github.com/JulianRudrich/Singline#install")]
+          : [`Version ${version}`, "Free and open source"];
+        parts.push(asset ? link("Other systems", release.html_url) : "Windows, macOS and Linux");
+        const note = document.getElementById("download-note");
+        note.replaceChildren(...parts.flatMap((part, index) => (index ? [" · ", part] : [part])));
+      })
+      .catch(() => {});
 
     // Sections fade in as they scroll into view.
     const observer = new IntersectionObserver((entries) => {
