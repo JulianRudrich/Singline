@@ -69,8 +69,9 @@
     .caption { color: var(--faint); font-size: 14px; margin-top: 8px; text-align: center; }
     table { width: 100%; border-collapse: collapse; font-size: 15px; }
     th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid var(--line); }
-    th { color: var(--muted); font-weight: 500; }
-    td:first-child { font-weight: 600; }
+    thead th { color: var(--muted); font-weight: 500; }
+    tbody th { font-weight: 600; }
+    .visually-hidden { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0; }
     .table { overflow-x: auto; background: var(--card); border: 1px solid var(--line); border-radius: 16px; }
     footer { padding: 96px 0 48px; color: var(--faint); font-size: 14px; text-align: center; }
     footer a { color: var(--muted); }
@@ -98,6 +99,7 @@
       <a class="link" href="https://github.com/JulianRudrich/Singline">GitHub</a>
     </nav>
 
+    <main>
     <header>
       <h1>Sing along to<br>every song.</h1>
       <p class="lead">Singline shows synced lyrics in a small window above everything else. Word by word, for Spotify, Apple Music, Amazon Music and YouTube Music.</p>
@@ -147,15 +149,20 @@
 
     <section id="players" class="reveal">
       <h2>Works with your player.</h2>
-      <p class="sub">Singline reads what your music app is playing. It never needs your password and never starts a player by itself.</p>
+      <p class="sub">Singline reads what your music app is playing. It never needs your password and never starts a player by itself. Web players work through the Singline extension for Chrome, Edge and Firefox.</p>
       <div class="table">
         <table>
-          <tr><th></th><th>Windows</th><th>macOS</th><th>Linux</th></tr>
-          <tr><td>Spotify</td><td>Desktop app</td><td>Desktop app</td><td>Desktop app</td></tr>
-          <tr><td>Apple Music</td><td>Apple Music app</td><td>Music app</td><td>Web player</td></tr>
-          <tr><td>Amazon Music</td><td>Desktop app</td><td>Web player</td><td>Web player</td></tr>
-          <tr><td>YouTube Music</td><td>Web app or browser</td><td>Browser</td><td>Browser</td></tr>
-          <tr><td>Other players</td><td>System media controls</td><td>Browser</td><td>Any MPRIS player</td></tr>
+          <thead>
+            <tr><th scope="col"><span class="visually-hidden">Player</span></th><th scope="col">Windows</th><th scope="col">macOS</th><th scope="col">Linux</th></tr>
+          </thead>
+          <tbody>
+            <tr><th scope="row">Spotify</th><td>Desktop app</td><td>Desktop app</td><td>Desktop app</td></tr>
+            <tr><th scope="row">Apple Music</th><td>Apple Music app</td><td>Music app</td><td>Web player</td></tr>
+            <tr><th scope="row">Amazon Music</th><td>Desktop app</td><td>Web player</td><td>Web player</td></tr>
+            <tr><th scope="row">YouTube Music</th><td>Web app or browser tab</td><td>Browser tab</td><td>Browser tab</td></tr>
+            <tr><th scope="row">YouTube and other web players</th><td>Browser tab</td><td>Browser tab</td><td>Browser tab</td></tr>
+            <tr><th scope="row">Other media players</th><td>System media controls</td><td>–<span class="visually-hidden">not supported</span></td><td>Any MPRIS player</td></tr>
+          </tbody>
         </table>
       </div>
     </section>
@@ -168,6 +175,8 @@
         <a class="button secondary" href="https://github.com/JulianRudrich/Singline">Source code</a>
       </div>
     </section>
+
+    </main>
 
     <footer>
       Made by <a href="https://github.com/JulianRudrich">Julian Rudrich</a> · Lyrics from <a href="https://lrclib.net">LRCLIB</a> · <a href="https://github.com/JulianRudrich/Singline/blob/main/LICENSE">GPL-3.0-or-later</a><br>
