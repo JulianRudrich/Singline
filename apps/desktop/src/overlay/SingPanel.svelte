@@ -102,6 +102,7 @@
   }
 
   .mic {
+    position: relative;
     display: grid;
     place-items: center;
     width: 38px;
@@ -109,11 +110,23 @@
     border-radius: 50%;
     border: 1.5px solid rgb(255 255 255 / 0.35);
     color: #fff;
+    transition: border-color var(--duration-pane) var(--ease-out);
   }
 
   .mic.live {
     border-color: #fff;
-    animation: breathe 2.4s ease-in-out infinite;
+  }
+
+  /* While it listens, a soft ring keeps leaving the microphone. */
+  .mic.live::after {
+    content: "";
+    position: absolute;
+    inset: -1.5px;
+    border-radius: 50%;
+    border: 1.5px solid #fff;
+    opacity: 0;
+    animation: ripple 2.4s var(--ease-out) infinite;
+    pointer-events: none;
   }
 
   .mic svg {
@@ -221,14 +234,21 @@
     color: #fff;
   }
 
-  @keyframes breathe {
-    50% {
-      box-shadow: 0 0 0 5px rgb(255 255 255 / 0.12);
+  @keyframes ripple {
+    0% {
+      opacity: 0.4;
+      transform: scale(1);
+    }
+
+    70%,
+    100% {
+      opacity: 0;
+      transform: scale(1.45);
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .mic.live {
+    .mic.live::after {
       animation: none;
     }
 
