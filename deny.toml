@@ -17,7 +17,11 @@ all-features = true
 # Vulnerabilities, unmaintained and unsound crates, and yanked releases all
 # count. To accept an advisory, add its ID to `ignore` with the reason.
 yanked = "deny"
-ignore = []
+ignore = [
+  # chrono has no known vulnerability. The listening statistics in lyrics-core
+  # build on its calendar types; they move to jiff in a change of their own.
+  { id = "RUSTSEC-2026-0543", reason = "chrono is unmaintained, with no known vulnerability" },
+]
 
 [licenses]
 # Licenses that can be combined with Singline's GPL-3.0-or-later.
