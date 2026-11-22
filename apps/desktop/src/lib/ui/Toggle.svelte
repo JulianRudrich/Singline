@@ -1,5 +1,6 @@
 <script lang="ts">
-  // A switch. On is white with a dark knob: no accent colour.
+  // A switch. On is white with a dark knob: no accent colour. While pressed the
+  // knob stretches towards the other side, as on the Mac.
   let {
     checked,
     label,
@@ -36,17 +37,27 @@
     left: 2px;
     width: 18px;
     height: 18px;
-    border-radius: 50%;
+    border-radius: 9px;
     background: #fff;
     box-shadow: 0 1px 2px rgb(0 0 0 / 0.35);
     transition:
       transform var(--duration-pane) var(--ease-out),
+      width var(--duration-press) var(--ease-out),
       background-color var(--duration-pane) var(--ease-out);
   }
 
   .toggle[aria-checked="true"] .knob {
     transform: translateX(16px);
     background: #161618;
+  }
+
+  .toggle:active:not(:disabled) .knob {
+    width: 23px;
+  }
+
+  /* On, it grows to the left, so its right edge stays put. */
+  .toggle[aria-checked="true"]:active:not(:disabled) .knob {
+    transform: translateX(11px);
   }
 
   .toggle:disabled {
@@ -61,6 +72,14 @@
   @media (prefers-reduced-motion: reduce) {
     .knob {
       transition-property: background-color;
+    }
+
+    .toggle:active:not(:disabled) .knob {
+      width: 18px;
+    }
+
+    .toggle[aria-checked="true"]:active:not(:disabled) .knob {
+      transform: translateX(16px);
     }
   }
 </style>
