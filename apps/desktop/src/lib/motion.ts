@@ -86,6 +86,34 @@ export function slideOut(node: Element, options: { reduced?: boolean } = {}): Tr
   return { ...slideIn(node, options), duration: duration.dismiss };
 }
 
+interface StepOptions {
+  /** 1 going forward, -1 going back. */
+  direction?: number;
+  reduced?: boolean;
+}
+
+/**
+ * A guide's next step comes in from the side it lies on, once the step before
+ * has nearly gone, so their texts never mix. With reduced motion it only fades.
+ */
+export function stepIn(_node: Element, { direction = 1, reduced = false }: StepOptions = {}): TransitionConfig {
+  return {
+    delay: duration.dismiss / 2,
+    duration: duration.pane,
+    easing: easeOut,
+    css: reduced ? (t) => `opacity: ${t}` : (t, u) => `opacity: ${t}; transform: translateX(${direction * rise.step * u}px)`,
+  };
+}
+
+/** The step it replaces leaves the other way, quicker. With reduced motion it only fades. */
+export function stepOut(_node: Element, { direction = 1, reduced = false }: StepOptions = {}): TransitionConfig {
+  return {
+    duration: duration.dismiss,
+    easing: easeOut,
+    css: reduced ? (t) => `opacity: ${t}` : (t, u) => `opacity: ${t}; transform: translateX(${-direction * rise.step * u}px)`,
+  };
+}
+
 /**
  * One number moving towards a target like a damped spring: `response` is the
  * period of the undamped spring in seconds, `damping` the share of critical
@@ -164,8 +192,8 @@ export const pressScale = {
   icon: 0.88,
 } as const;
 
-/** How far content rises while it comes in, in pixels. */
-export const rise = { pane: 6, reveal: 8 } as const;
+/** How far content rises while it comes in, in pixels; a guide's steps slide sideways. */
+export const rise = { pane: 6, reveal: 8, step: 16 } as const;
 
 /** How blurred revealed content starts, in pixels. */
 export const revealBlur = 6;

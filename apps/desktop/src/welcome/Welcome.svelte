@@ -4,7 +4,8 @@
   import { hotkeyLabel } from "../lib/hotkey";
   import { translator } from "../lib/i18n";
   import { connect } from "../lib/live";
-  import { paneIn } from "../lib/motion";
+  import { prefersReducedMotion } from "svelte/motion";
+  import { stepIn, stepOut } from "../lib/motion";
   import type { AppInfo, Playback, Settings, SourcePreference } from "../lib/types";
   import Glyph, { type GlyphName } from "../lib/ui/Glyph.svelte";
   import KeyCap from "../lib/ui/KeyCap.svelte";
@@ -21,8 +22,9 @@
   let playback = $state<Playback | null>(null);
   let app = $state<AppInfo | null>(null);
   let index = $state(0);
-  /** The first step appears with the window; later ones fade in. */
-  let moved = $state(false);
+  /** 1 after Continue, -1 after Back: the steps slide the way the guide goes. The first one comes with the window. */
+  let direction = $state(1);
+  const motion = $derived({ direction, reduced: prefersReducedMotion.current });
 
   const step = $derived(steps[index]);
   const last = $derived(index === steps.length - 1);
@@ -43,8 +45,9 @@
   });
 
   function go(next: number) {
-    index = Math.max(0, Math.min(steps.length - 1, next));
-    moved = true;
+    const target = Math.max(0, Math.min(steps.length - 1, next));
+    direction = target < index ? -1 : 1;
+    index = target;
   }
 
   function forward() {
@@ -86,19 +89,27 @@
 {#if settings && app}
   <!-- Like the settings, the window moves when dragged anywhere but on a control. -->
   <main class="window" data-tauri-drag-region="deep">
+    <!-- The step that goes and the one that comes share the place while they pass. -->
+    <div class="steps">
     {#key step}
-      <section class="step" class:centered={step === "intro"} use:paneIn={moved} aria-labelledby="welcome-title">
+      <section
+        class="step"
+        class:centered={step === "intro"}
+        in:stepIn={motion}
+        out:stepOut={motion}
+        aria-labelledby="welcome-title-{step}"
+      >
         {#if step === "intro"}
           <div class="intro">
             <Mark size={56} />
-            <h1 id="welcome-title">{t("welcome.title")}</h1>
+            <h1 id="welcome-title-{step}">{t("welcome.title")}</h1>
             <p class="lead">{t("welcome.tagline")}</p>
           </div>
           <TrayPreview {platform} label={where} />
           <p class="note">{where} {t("welcome.reopen")}</p>
         {:else if step === "player"}
           <header>
-            <h1 id="welcome-title">{t("welcome.playerTitle")}</h1>
+            <h1 id="welcome-title-{step}">{t("welcome.playerTitle")}</h1>
             <p>{t("welcome.playerHint")}</p>
           </header>
           <PlayerPicker
@@ -111,7 +122,7 @@
           />
         {:else if step === "browser"}
           <header>
-            <h1 id="welcome-title">{t("welcome.browserTitle")}</h1>
+            <h1 id="welcome-title-{step}">{t("welcome.browserTitle")}</h1>
             <p>{t("welcome.browserHint")}</p>
           </header>
           <BrowserBridge />
@@ -121,7 +132,7 @@
           </a>
         {:else}
           <header>
-            <h1 id="welcome-title">{t("welcome.readyTitle")}</h1>
+            <h1 id="welcome-title-{step}">{t("welcome.readyTitle")}</h1>
             <p>{t("welcome.readyHint")}</p>
           </header>
           <ul class="tips">
@@ -140,6 +151,7 @@
         {/if}
       </section>
     {/key}
+    </div>
 
     <footer>
       <div class="dots" role="img" aria-label={t("welcome.progress", { step: index + 1, count: steps.length })}>
@@ -205,8 +217,15 @@
     }
   }
 
-  .step {
+  .steps {
     flex: 1;
+    min-height: 0;
+    display: grid;
+    grid-template: minmax(0, 1fr) / minmax(0, 1fr);
+  }
+
+  .step {
+    grid-area: 1 / 1;
     min-height: 0;
     display: flex;
     flex-direction: column;

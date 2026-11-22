@@ -15,6 +15,8 @@ import {
   slideOut,
   smoothstep,
   songExit,
+  stepIn,
+  stepOut,
   Spring,
 } from "./motion";
 
@@ -106,6 +108,18 @@ describe("transitions", () => {
     expect(dropIn(element).duration).toBe(duration.pane);
     expect(dropIn(element).css?.(0, 1)).toBe("opacity: 0; transform: translateY(-6px)");
     expect(dropIn(element, { reduced: true }).css?.(0, 1)).toBe("opacity: 0");
+  });
+
+  it("slides a guide's steps in from the side they lie on and out the other way", () => {
+    expect(stepIn(element).css?.(0, 1)).toBe("opacity: 0; transform: translateX(16px)");
+    expect(stepIn(element, { direction: -1 }).css?.(0, 1)).toBe("opacity: 0; transform: translateX(-16px)");
+    expect(stepOut(element).css?.(0, 1)).toBe("opacity: 0; transform: translateX(-16px)");
+    expect(stepOut(element, { direction: -1 }).css?.(0, 1)).toBe("opacity: 0; transform: translateX(16px)");
+    expect(stepOut(element).duration).toBe(duration.dismiss);
+    // The new step waits until the old one has nearly gone.
+    expect(stepIn(element).delay).toBe(duration.dismiss / 2);
+    expect(stepIn(element, { reduced: true }).css?.(0, 1)).toBe("opacity: 0");
+    expect(stepOut(element, { reduced: true }).css?.(0, 1)).toBe("opacity: 0");
   });
 
   it("slides controls in from the right, and out again quicker", () => {
