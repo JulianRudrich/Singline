@@ -8,3 +8,6 @@
 *.gif binary
 *.ico binary
 *.icns binary
+*.jpg binary
+*.mp4 binary
+*.webm binary

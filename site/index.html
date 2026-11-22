@@ -65,7 +65,7 @@
     .secondary { background: var(--card); border: 1px solid var(--line); }
     .secondary:hover { background: rgb(255 255 255 / 0.1); }
     .note { color: var(--faint); font-size: 14px; margin-top: 14px; }
-    .demo { display: block; width: min(770px, 100%); margin: 48px auto 0; border-radius: 22px; box-shadow: 0 40px 120px rgb(0 0 0 / 0.7); }
+    .demo { display: block; width: min(770px, 100%); height: auto; margin: 48px auto 0; border-radius: 22px; box-shadow: 0 40px 120px rgb(0 0 0 / 0.7); }
     section { padding: 88px 0 0; }
     h2 { font-size: clamp(28px, 3.6vw, 38px); letter-spacing: -0.02em; margin: 0 0 10px; }
     .sub { color: var(--muted); margin: 0 0 34px; max-width: 680px; }
@@ -117,7 +117,10 @@
         <a class="button secondary" href="https://github.com/JulianRudrich/Singline">View on GitHub</a>
       </div>
       <p class="note" id="download-note">Free and open source · Windows, macOS and Linux</p>
-      <img class="demo" src="images/demo.gif" width="770" height="434" alt="Singline playing a song: the lines scroll up, each word lights up as it is sung, and the mini-player appears on hover">
+      <video class="demo" width="770" height="434" muted loop playsinline preload="auto" poster="media/demo.jpg" aria-label="Singline playing a song: the lines scroll up, each word lights up as it is sung, and the mini-player appears on hover">
+        <source src="media/demo.webm" type="video/webm">
+        <source src="media/demo.mp4" type="video/mp4">
+      </video>
     </header>
 
     <section id="features" class="reveal">
@@ -153,7 +156,10 @@
     <section class="reveal" style="text-align:center">
       <h2>Karaoke on the big screen.</h2>
       <p class="sub" style="margin-left:auto;margin-right:auto">Put the lyrics on a second screen or a TV: large, white on black, word by word, with a countdown before every line.</p>
-      <img class="shot" src="images/karaoke.gif" width="900" height="281" alt="Karaoke mode: large white lines on black, the current line lighting up word by word" loading="lazy">
+      <video class="shot" width="900" height="280" muted loop playsinline preload="none" poster="media/karaoke.jpg" aria-label="Karaoke mode: large white lines on black, the current line lighting up word by word">
+        <source src="media/karaoke.webm" type="video/webm">
+        <source src="media/karaoke.mp4" type="video/mp4">
+      </video>
     </section>
 
     <section id="players" class="reveal">
@@ -248,6 +254,21 @@
       }
     }, { threshold: 0.12 });
     document.querySelectorAll(".reveal").forEach((element) => observer.observe(element));
+
+    // The demos play while they are in view. With reduced motion they wait
+    // for a click on their controls instead.
+    const videos = document.querySelectorAll("video");
+    if (matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      videos.forEach((video) => (video.controls = true));
+    } else {
+      const player = new IntersectionObserver((entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting) entry.target.play().catch(() => {});
+          else entry.target.pause();
+        }
+      }, { threshold: 0.25 });
+      videos.forEach((video) => player.observe(video));
+    }
   </script>
 </body>
 </html>
