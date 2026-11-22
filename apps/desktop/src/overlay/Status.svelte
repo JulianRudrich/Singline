@@ -74,8 +74,8 @@
     color: rgb(255 255 255 / 0.6);
     cursor: pointer;
     transition:
-      color 0.15s,
-      transform 0.14s cubic-bezier(0.23, 1, 0.32, 1);
+      color var(--duration-press) var(--ease-out),
+      transform var(--duration-press) var(--ease-out);
   }
 
   .retry:hover,
@@ -84,6 +84,11 @@
   }
 
   .retry:active {
-    transform: scale(0.94);
+    transform: scale(var(--press-scale-icon));
+  }
+
+  .retry:focus-visible {
+    outline: 2px solid rgb(255 255 255 / 0.7);
+    outline-offset: 2px;
   }
 </style>

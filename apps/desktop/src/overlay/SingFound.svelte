@@ -81,9 +81,9 @@
     font: inherit;
     cursor: pointer;
     transition:
-      color 0.15s,
-      background-color 0.15s,
-      transform 0.14s cubic-bezier(0.23, 1, 0.32, 1);
+      color var(--duration-press) var(--ease-out),
+      background-color var(--duration-press) var(--ease-out),
+      transform var(--duration-press) var(--ease-out);
   }
 
   .next {
@@ -100,6 +100,7 @@
     width: 22px;
     height: 22px;
     padding: 0;
+    border-radius: 50%;
   }
 
   button:hover,
@@ -109,6 +110,15 @@
   }
 
   button:active {
-    transform: scale(0.94);
+    transform: scale(var(--press-scale));
+  }
+
+  .again:active {
+    transform: scale(var(--press-scale-icon));
+  }
+
+  button:focus-visible {
+    outline: 2px solid rgb(255 255 255 / 0.7);
+    outline-offset: 2px;
   }
 </style>

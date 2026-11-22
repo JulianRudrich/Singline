@@ -62,10 +62,11 @@
     padding: 0;
     background: none;
     color: rgb(255 255 255 / 0.6);
+    border-radius: 50%;
     cursor: pointer;
     transition:
-      color 0.15s,
-      transform 0.14s cubic-bezier(0.23, 1, 0.32, 1);
+      color var(--duration-press) var(--ease-out),
+      transform var(--duration-press) var(--ease-out);
   }
 
   .skip {
@@ -83,8 +84,13 @@
     color: #fff;
   }
 
+  button:focus-visible {
+    outline: 2px solid rgb(255 255 255 / 0.7);
+    outline-offset: 2px;
+  }
+
   button:active {
-    transform: scale(0.86);
+    transform: scale(var(--press-scale-icon));
   }
 
   svg {
@@ -119,9 +125,4 @@
     height: 30px;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    button {
-      transition: color 0.15s;
-    }
-  }
 </style>

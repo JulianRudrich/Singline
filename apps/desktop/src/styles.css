@@ -9,6 +9,7 @@
   --duration-dismiss: 120ms;
   --press-scale: 0.94;
   --press-scale-subtle: 0.97;
+  --press-scale-icon: 0.88;
   --rise-pane: 6px;
   --rise-reveal: 8px;
   --reveal-blur: 6px;
@@ -30,6 +31,7 @@
   :root {
     --press-scale: 1;
     --press-scale-subtle: 1;
+    --press-scale-icon: 1;
     --rise-pane: 0px;
     --rise-reveal: 0px;
     --reveal-blur: 0px;

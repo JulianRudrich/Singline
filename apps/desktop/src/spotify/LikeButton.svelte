@@ -90,7 +90,9 @@
     background: none;
     color: #fff;
     cursor: pointer;
-    transition: transform 0.12s ease;
+    transition:
+      background-color var(--duration-press) var(--ease-out),
+      transform var(--duration-press) var(--ease-out);
   }
 
   .like:hover {
@@ -98,7 +100,12 @@
   }
 
   .like:active {
-    transform: scale(0.88);
+    transform: scale(var(--press-scale-icon));
+  }
+
+  .like:focus-visible {
+    outline: 2px solid rgb(255 255 255 / 0.7);
+    outline-offset: 2px;
   }
 
   path {
@@ -112,9 +119,4 @@
     fill: currentColor;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .like {
-      transition: none;
-    }
-  }
 </style>

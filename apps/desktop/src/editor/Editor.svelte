@@ -193,7 +193,6 @@
   }
 
   .editor-window {
-    --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
     box-sizing: border-box;
     height: 100vh;
     display: flex;
@@ -256,8 +255,8 @@
     white-space: pre;
     overflow: auto;
     transition:
-      border-color 160ms var(--ease-out),
-      background-color 160ms var(--ease-out);
+      border-color var(--duration-press) var(--ease-out),
+      background-color var(--duration-press) var(--ease-out);
   }
 
   textarea::placeholder {
@@ -324,8 +323,8 @@
     font-weight: 500;
     cursor: pointer;
     transition:
-      transform 140ms var(--ease-out),
-      background-color 140ms var(--ease-out);
+      transform var(--duration-press) var(--ease-out),
+      background-color var(--duration-press) var(--ease-out);
   }
 
   button:hover:not(:disabled) {
@@ -333,7 +332,7 @@
   }
 
   button:active:not(:disabled) {
-    transform: scale(0.97);
+    transform: scale(var(--press-scale-subtle));
   }
 
   button:focus-visible {
@@ -365,14 +364,4 @@
     font-size: 11px;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    button,
-    textarea {
-      transition: none;
-    }
-
-    button:active:not(:disabled) {
-      transform: none;
-    }
-  }
 </style>

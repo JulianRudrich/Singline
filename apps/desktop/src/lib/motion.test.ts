@@ -132,6 +132,7 @@ describe("motion tokens", () => {
     expect(token("--duration-dismiss")).toBe(`${duration.dismiss}ms`);
     expect(token("--press-scale")).toBe(String(pressScale.regular));
     expect(token("--press-scale-subtle")).toBe(String(pressScale.subtle));
+    expect(token("--press-scale-icon")).toBe(String(pressScale.icon));
     expect(token("--rise-pane")).toBe(`${rise.pane}px`);
     expect(token("--rise-reveal")).toBe(`${rise.reveal}px`);
     expect(token("--reveal-blur")).toBe(`${revealBlur}px`);

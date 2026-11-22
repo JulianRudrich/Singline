@@ -160,6 +160,8 @@ export const pressScale = {
   regular: 0.94,
   /** Larger targets such as sidebar items. */
   subtle: 0.97,
+  /** Small glyphs without a background, such as play and pause: they give more. */
+  icon: 0.88,
 } as const;
 
 /** How far content rises while it comes in, in pixels. */

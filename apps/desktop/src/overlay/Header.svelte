@@ -192,9 +192,9 @@
     color: rgb(255 255 255 / 0.6);
     cursor: pointer;
     transition:
-      color 0.15s,
-      background-color 0.15s,
-      transform 0.14s cubic-bezier(0.23, 1, 0.32, 1);
+      color var(--duration-press) var(--ease-out),
+      background-color var(--duration-press) var(--ease-out),
+      transform var(--duration-press) var(--ease-out);
   }
 
   .sing svg {
@@ -217,7 +217,7 @@
   }
 
   .sing:active {
-    transform: scale(0.92);
+    transform: scale(var(--press-scale-icon));
   }
 
   .settings {
@@ -229,11 +229,12 @@
     border: 0;
     padding: 0;
     background: none;
+    border-radius: 50%;
     color: rgb(255 255 255 / 0.6);
     cursor: pointer;
     transition:
-      color 0.15s,
-      transform 0.14s cubic-bezier(0.23, 1, 0.32, 1);
+      color var(--duration-press) var(--ease-out),
+      transform var(--duration-press) var(--ease-out);
   }
 
   .settings:hover,
@@ -242,7 +243,13 @@
   }
 
   .settings:active {
-    transform: scale(0.94);
+    transform: scale(var(--press-scale-icon));
+  }
+
+  .sing:focus-visible,
+  .settings:focus-visible {
+    outline: 2px solid rgb(255 255 255 / 0.7);
+    outline-offset: 2px;
   }
 
   .settings svg {
@@ -255,9 +262,4 @@
     stroke-width: 1.6;
   }
 
-  @media (prefers-reduced-motion: reduce) {
-    .settings {
-      transition: color 0.15s;
-    }
-  }
 </style>

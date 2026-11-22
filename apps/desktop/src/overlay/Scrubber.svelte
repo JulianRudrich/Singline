@@ -266,7 +266,7 @@
     border-radius: 50%;
     background: #fff;
     box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.25);
-    transition: transform 0.14s cubic-bezier(0.23, 1, 0.32, 1);
+    transition: transform var(--duration-press) var(--ease-out);
   }
 
   .mark:hover::before,
