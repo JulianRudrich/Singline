@@ -1,6 +1,7 @@
 <script lang="ts">
   // What the lyrics area says when there are no lyrics to show. Without lyrics
-  // or for an instrumental, the three-bar mark stands above the text.
+  // or for an instrumental, the three-bar mark stands above the text. While the
+  // lyrics are looked for, a soft light runs through the words.
   import type { Translate } from "../lib/i18n";
   import Icon from "../lib/Icon.svelte";
   import BarsMark from "./BarsMark.svelte";
@@ -12,11 +13,13 @@
     playing: boolean;
     /** Seconds before the text appears; a quick search never shows. */
     delay: number;
+    /** The lyrics are being looked for. */
+    busy?: boolean;
     onretry: (() => void) | null;
     t: Translate;
   }
 
-  let { text, mark, playing, delay, onretry, t }: Props = $props();
+  let { text, mark, playing, delay, busy = false, onretry, t }: Props = $props();
 </script>
 
 <div class="status reveal" class:mark style:animation-delay="{delay}s">
@@ -24,7 +27,7 @@
     <BarsMark {playing} />
   {/if}
   <div class="message">
-    <p>{text}</p>
+    <p class:busy>{text}</p>
     {#if onretry}
       <button class="retry" onclick={onretry} title={t("overlay.retry")} aria-label={t("overlay.retry")}>
         <Icon name="retry" size={15} />
@@ -59,6 +62,39 @@
     font-size: 13px;
     line-height: 1.35;
     color: rgb(255 255 255 / 0.6);
+  }
+
+  /* A band of light passes through the text, white on white. */
+  p.busy {
+    background: linear-gradient(
+        100deg,
+        rgb(255 255 255 / 0.6) 40%,
+        rgb(255 255 255 / 0.95) 50%,
+        rgb(255 255 255 / 0.6) 60%
+      )
+      0 0 / 250% 100%;
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    animation: shimmer 2.4s linear infinite;
+  }
+
+  @keyframes shimmer {
+    from {
+      background-position: 100% 0;
+    }
+
+    to {
+      background-position: -150% 0;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    p.busy {
+      animation: none;
+      background: none;
+      color: rgb(255 255 255 / 0.6);
+    }
   }
 
   .retry {

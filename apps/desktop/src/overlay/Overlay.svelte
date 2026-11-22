@@ -286,6 +286,7 @@
             mark={statusMark}
             playing={playback?.playing ?? false}
             delay={searching ? 0.35 : 0.1}
+            busy={searching && lyricsView?.status === "loading"}
             onretry={lyricsView?.canRetry && playback?.state === "track" ? () => api.reloadLyrics() : null}
             {t}
           />
