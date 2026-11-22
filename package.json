@@ -1,6 +1,12 @@
 {
   "name": "singline-workspace",
   "private": true,
+  "description": "Synced lyrics in a small window above everything else, for Spotify, Apple Music, Amazon Music and YouTube Music.",
+  "license": "GPL-3.0-or-later",
+  "repository": "github:JulianRudrich/Singline",
+  "engines": {
+    "node": ">=22"
+  },
   "packageManager": "pnpm@10.28.0",
   "scripts": {
     "dev": "pnpm --filter singline-desktop tauri dev",
