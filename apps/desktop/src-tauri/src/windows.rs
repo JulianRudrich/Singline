@@ -267,7 +267,8 @@ pub fn open_stats(app: &AppHandle) {
     }
 }
 
-/// The True Shuffle window, opened from the tray.
+/// The True Shuffle window, opened from the tray. Like "Your music", it is
+/// always dark and starts out in its page's colour, so it never flashes white.
 pub fn open_shuffle(app: &AppHandle) {
     if let Some(window) = app.get_webview_window(SHUFFLE) {
         let _ = window.unminimize();
@@ -285,6 +286,8 @@ pub fn open_shuffle(app: &AppHandle) {
             .resizable(true)
             .center()
             .focused(true)
+            .theme(Some(Theme::Dark))
+            .background_color(Color(17, 17, 19, 255))
             .build();
     match built {
         Ok(_) => dock::update(app, SHUFFLE, false),
@@ -485,8 +488,9 @@ pub fn set_settings_title(app: &AppHandle, title: &str) {
 }
 
 /// Opens the editor for your own lyrics, or brings it to the front when it is
-/// already open. On Windows, call this from an async command or another thread:
-/// building a webview inside a synchronous command deadlocks there.
+/// already open. It is always dark and starts out in its page's colour. On
+/// Windows, call this from an async command or another thread: building a
+/// webview inside a synchronous command deadlocks there.
 pub fn open_editor(app: &AppHandle) {
     if let Some(window) = app.get_webview_window(EDITOR) {
         let _ = window.unminimize();
@@ -504,6 +508,8 @@ pub fn open_editor(app: &AppHandle) {
             .resizable(true)
             .center()
             .focused(true)
+            .theme(Some(Theme::Dark))
+            .background_color(Color(14, 15, 17, 255))
             .build();
     match built {
         Ok(_) => dock::update(app, EDITOR, false),
