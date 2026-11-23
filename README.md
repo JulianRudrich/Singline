@@ -96,7 +96,7 @@ Every change on `main` produces a test build for all three systems. The newest o
    - **macOS:** if macOS refuses to open the app, go to **System Settings → Privacy & Security** and choose **Open Anyway** (on macOS 14 and earlier, right-click the app and choose **Open**). When you play music, allow Singline to control Spotify or Music.
    - **Linux:** install the package with `sudo apt install ./Singline-Linux.deb`, or make the AppImage executable with `chmod +x Singline-Linux.AppImage` and start it. If the AppImage does not start, install FUSE 2: `sudo apt install libfuse2t64` on Ubuntu 24.04 and later, `sudo apt install libfuse2` on older versions.
 
-Every build of `main` is also under [Actions](https://github.com/JulianRudrich/Singline/actions/workflows/ci.yml?query=branch%3Amain+is%3Asuccess), for signed-in GitHub users, together with `singline-watch`, a small tool that shows what your players report (see [Troubleshooting](#troubleshooting)).
+The test build release also has `singline-watch`, a small tool that shows what your players report (see [Troubleshooting](#troubleshooting)). Every build of `main` is under [Actions](https://github.com/JulianRudrich/Singline/actions/workflows/ci.yml?query=branch%3Amain+is%3Asuccess) as well, for signed-in GitHub users.
 
 ### Browser extension
 
@@ -267,7 +267,7 @@ xattr -dr com.apple.quarantine /Applications/Singline.app
 
 **The overlay does not stay on top on Linux (Wayland).** GNOME does not let apps keep normal windows on top under Wayland. Start Singline with `GDK_BACKEND=x11` so it runs through XWayland.
 
-**Find out what your player reports.** `singline-watch` prints live what every player on your computer reports: title, artist, album, position, how far the position drifts, and which controls it offers. The builds under [Actions](https://github.com/JulianRudrich/Singline/actions/workflows/ci.yml?query=branch%3Amain+is%3Asuccess) and every release include it; from source, run:
+**Find out what your player reports.** `singline-watch` prints live what every player on your computer reports: title, artist, album, position, how far the position drifts, and which controls it offers. The [test build release](https://github.com/JulianRudrich/Singline/releases/tag/nightly), the builds under [Actions](https://github.com/JulianRudrich/Singline/actions/workflows/ci.yml?query=branch%3Amain+is%3Asuccess) and every release include it; from source, run:
 
 ```bash
 cargo run --release -p media-session --bin singline-watch

@@ -228,17 +228,20 @@ jobs:
                 for file in target/universal-apple-darwin/release/bundle/macos/*.app.tar.gz*; do
                   [ -e "$file" ] && cp "$file" "nightly/Singline-macOS.app.tar.gz${file##*.tar.gz}"
                 done
+                cp dist-test/singline-watch-macos.tar.gz nightly/
                 ;;
               Windows)
                 for file in target/release/bundle/nsis/*-setup.exe*; do
                   cp "$file" "nightly/Singline-Windows-setup.exe${file##*-setup.exe}"
                 done
+                cp dist-test/singline-watch.exe nightly/
                 ;;
               Linux)
                 cp target/release/bundle/deb/*.deb nightly/Singline-Linux.deb
                 for file in target/release/bundle/appimage/*.AppImage*; do
                   cp "$file" "nightly/Singline-Linux.AppImage${file##*.AppImage}"
                 done
+                cp dist-test/singline-watch-linux.tar.gz nightly/
                 ;;
             esac
             ls -la nightly
@@ -294,13 +297,15 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           cat > notes.md <<EOF
-          The newest test build of \`main\` (${GITHUB_SHA::7}). Installed test builds update themselves to it.
+          The newest test build of \`main\` (${GITHUB_SHA::7}).
 
-          To install it the first time, download the file for your system:
+          To install it, download the file for your system:
 
           - **macOS:** \`Singline-macOS.dmg\`
           - **Windows:** \`Singline-Windows-setup.exe\`
           - **Linux:** \`Singline-Linux.AppImage\` or \`Singline-Linux.deb\`
+
+          \`singline-watch\` (\`singline-watch.exe\`, \`singline-watch-macos.tar.gz\`, \`singline-watch-linux.tar.gz\`) shows what your players report, for a bug report.
 
           Test builds are not signed by Apple or Microsoft yet: see Install in the README for opening them anyway.
           EOF

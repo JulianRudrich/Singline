@@ -4,7 +4,7 @@ Thanks for helping. Singline is a small project, and every bug report, translati
 
 ## Ways to help
 
-- **Report a problem** with the [bug report form](https://github.com/JulianRudrich/Singline/issues/new/choose), or from the app with Settings → About → **Report a problem**. The output of `singline-watch` tells us what your player reports; releases include it, and so does every CI run of `main` under Actions.
+- **Report a problem** with the [bug report form](https://github.com/JulianRudrich/Singline/issues/new/choose), or from the app with Settings → About → **Report a problem**. The output of `singline-watch` tells us what your player reports; releases and the test build release include it, and so does every CI run of `main` under Actions.
 - **Fix lyrics at the source.** Singline gets its lyrics from [LRCLIB](https://lrclib.net). Missing or badly timed lyrics are best added or corrected there, so every app benefits.
 - **Test on Windows and macOS.** [docs/TESTING.md](docs/TESTING.md) is a ten-minute checklist.
 - **Translate Singline** into your language; see [Adding a language](#adding-a-language).
