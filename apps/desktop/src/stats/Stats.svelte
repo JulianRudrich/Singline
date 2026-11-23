@@ -1,8 +1,10 @@
 <script lang="ts">
   import { getCurrentWindow } from "@tauri-apps/api/window";
   import { onMount } from "svelte";
+  import { Tween } from "svelte/motion";
   import { translator, type MessageKey } from "../lib/i18n";
   import { connect } from "../lib/live";
+  import { easeOut, prefersReducedMotion } from "../lib/motion";
   import type { AppInfo } from "../lib/types";
   import Segmented from "../lib/ui/Segmented.svelte";
   import HistorySettings from "../settings/HistorySettings.svelte";
@@ -23,6 +25,29 @@
   const language = $derived(app?.language ?? "en");
   const t = $derived(translator(language));
   const duration = (seconds: number) => formatDuration(seconds, language, t);
+
+  // The tiles count from the numbers on show to new ones, for another range or
+  // a new play. The first numbers show at once, and so do all with reduced motion.
+  const COUNTING = { duration: 600, easing: easeOut };
+  const counts = {
+    seconds: new Tween(0, COUNTING),
+    plays: new Tween(0, COUNTING),
+    streak: new Tween(0, COUNTING),
+    skips: new Tween(0, COUNTING),
+  };
+  let counted = false;
+
+  $effect(() => {
+    if (!summary) return;
+    const options = counted && !prefersReducedMotion() ? undefined : { duration: 0 };
+    void counts.seconds.set(summary.seconds, options);
+    void counts.plays.set(summary.plays, options);
+    void counts.streak.set(summary.streakDays, options);
+    void counts.skips.set(summary.skips, options);
+    counted = true;
+  });
+
+  const whole = (count: number) => formatCount(Math.round(count), language);
 
   $effect(() => {
     const title = t("stats.title");
@@ -111,18 +136,18 @@
       <section class="tiles reveal" style="--order: 1">
         {@render tile(
           t("stats.tileListening"),
-          duration(summary.seconds),
+          duration(counts.seconds.current),
           summary.range === "today" ? "" : t("stats.tileListeningDetail", { duration: duration(summary.dailyAverage) }),
         )}
         {@render tile(
           t("stats.tilePlays"),
-          formatCount(summary.plays, language),
+          whole(counts.plays.current),
           summary.plays > 0 ? t("stats.tilePlaysDetail", { percent: percent(summary.syncedPlays, summary.plays) }) : "",
         )}
-        {@render tile(t("stats.tileStreak"), formatCount(summary.streakDays, language), t("stats.tileStreakDetail"))}
+        {@render tile(t("stats.tileStreak"), whole(counts.streak.current), t("stats.tileStreakDetail"))}
         {@render tile(
           t("stats.tileSkips"),
-          formatCount(summary.skips, language),
+          whole(counts.skips.current),
           summary.songs > 0 ? t("stats.tileSkipsDetail", { percent: percent(summary.skips, summary.songs) }) : "",
         )}
       </section>
@@ -300,6 +325,8 @@
     font-weight: 600;
     letter-spacing: -0.01em;
     line-height: 1.15;
+    /* Equal digit widths, so a number counting up does not wobble. */
+    font-variant-numeric: tabular-nums;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
