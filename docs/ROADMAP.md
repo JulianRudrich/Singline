@@ -50,7 +50,7 @@ Ported from the Swift code contributed from Linory:
 - [x] A browser extension for YouTube Music, YouTube, Spotify, Apple Music and Amazon Music on the web
 - [ ] The extension in the Chrome Web Store and on Firefox Add-ons; Tidal and Deezer
 - [ ] The Amazon Music desktop apps, as far as measurement B allows
-- [ ] Any player, with allow and ignore lists
+- [x] Any player, and a switch for each one never to follow
 - [ ] Linux: Wayland support through the layer shell, and packages
 
 The first release follows this milestone. Singline then replaces the native macOS app.

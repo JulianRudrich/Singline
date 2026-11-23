@@ -52,6 +52,8 @@ pub struct Settings {
     pub keep_history: bool,
     pub source: SourcePreference,
     pub include_other_players: bool,
+    /// Players never to follow, by name, such as a browser that plays videos.
+    pub ignored_players: Vec<String>,
     pub click_through: bool,
     pub language: Language,
     /// The listener's own choice; auto-hide only hides on top of it.
@@ -88,6 +90,7 @@ impl Default for Settings {
             keep_history: true,
             source: SourcePreference::Automatic,
             include_other_players: false,
+            ignored_players: Vec::new(),
             click_through: false,
             language: Language::System,
             overlay_visible: true,

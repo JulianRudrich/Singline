@@ -8,6 +8,7 @@
   import BrowserBridge from "./BrowserBridge.svelte";
   import HotkeyField, { type HotkeyStatus } from "./HotkeyField.svelte";
   import type { PaneContext } from "./panes";
+  import Players from "./Players.svelte";
   import SingToFind from "./SingToFind.svelte";
 
   let { ctx }: { ctx: PaneContext } = $props();
@@ -62,14 +63,7 @@
   />
 </Row>
 
-<Row icon="players" title={t("settings.includeOther")} hint={t("settings.includeOtherHint")}>
-  <Toggle
-    label={t("settings.includeOther")}
-    checked={settings.includeOtherPlayers}
-    disabled={app.demo || settings.source !== "automatic"}
-    onchange={(includeOtherPlayers) => ctx.update({ includeOtherPlayers })}
-  />
-</Row>
+<Players {ctx} />
 
 <BrowserBridge />
 

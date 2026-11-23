@@ -62,6 +62,8 @@ pub struct Engine {
     selection: PlaybackSelection<PlayerId>,
     preference: SourcePreference,
     include_other: bool,
+    /// Names of players never to follow, in lower case.
+    ignored: Vec<String>,
 }
 
 impl Engine {
@@ -70,7 +72,30 @@ impl Engine {
             selection: PlaybackSelection::new(),
             preference,
             include_other,
+            ignored: Vec::new(),
         }
+    }
+
+    /// Players the listener never wants followed, by name, whatever case.
+    /// Changing them starts the selection over.
+    pub fn set_ignored(&mut self, names: &[String]) {
+        let ignored: Vec<String> = names
+            .iter()
+            .map(|name| name.trim().to_lowercase())
+            .collect();
+        if ignored != self.ignored {
+            self.selection = PlaybackSelection::new();
+            self.ignored = ignored;
+        }
+    }
+
+    /// Sing to find's microphone is never ignored.
+    fn ignores(&self, player: &PlayerInfo) -> bool {
+        player.service != Service::Microphone
+            && self
+                .ignored
+                .iter()
+                .any(|name| *name == player.name.to_lowercase())
     }
 
     pub fn preference(&self) -> SourcePreference {
@@ -80,7 +105,9 @@ impl Engine {
     /// Changing what is followed starts the selection over.
     pub fn set_preference(&mut self, preference: SourcePreference, include_other: bool) {
         if (preference, include_other) != (self.preference, self.include_other) {
+            let ignored = std::mem::take(&mut self.ignored);
             *self = Self::new(preference, include_other);
+            self.ignored = ignored;
         }
     }
 
@@ -102,7 +129,7 @@ impl Engine {
                 if singing {
                     player.service == Service::Microphone
                 } else {
-                    self.preference.accepts(player, self.include_other)
+                    self.preference.accepts(player, self.include_other) && !self.ignores(player)
                 }
             })
             .collect();
@@ -243,6 +270,49 @@ mod tests {
             title(&Engine::new(SourcePreference::Automatic, true).choose(browser())),
             Some("Video")
         );
+    }
+
+    #[test]
+    fn ignored_players_are_never_followed() {
+        let playing = || {
+            vec![
+                reading(
+                    "Spotify",
+                    Service::Spotify,
+                    PlaybackStatus::Paused,
+                    Some("Song"),
+                ),
+                reading(
+                    "Firefox",
+                    Service::Other,
+                    PlaybackStatus::Playing,
+                    Some("Video"),
+                ),
+            ]
+        };
+        let mut engine = Engine::new(SourcePreference::Automatic, true);
+        assert_eq!(title(&engine.choose(playing())), Some("Video"));
+        engine.set_ignored(&[" firefox ".into()]);
+        assert_eq!(title(&engine.choose(playing())), Some("Song"));
+        // A new source keeps the ignored players.
+        engine.set_preference(SourcePreference::Automatic, false);
+        engine.set_preference(SourcePreference::Automatic, true);
+        assert_eq!(title(&engine.choose(playing())), Some("Song"));
+        engine.set_ignored(&[]);
+        assert_eq!(title(&engine.choose(playing())), Some("Video"));
+    }
+
+    #[test]
+    fn the_microphone_is_never_ignored() {
+        let mut engine = Engine::new(SourcePreference::Automatic, false);
+        engine.set_ignored(&["Microphone".into()]);
+        let now = engine.choose(vec![reading(
+            "Microphone",
+            Service::Microphone,
+            PlaybackStatus::Playing,
+            Some("Sung"),
+        )]);
+        assert_eq!(title(&now), Some("Sung"));
     }
 
     #[test]

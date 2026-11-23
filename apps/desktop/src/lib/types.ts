@@ -127,6 +127,8 @@ export interface Settings {
   keepHistory: boolean;
   source: SourcePreference;
   includeOtherPlayers: boolean;
+  /** Players never to follow, by name. */
+  ignoredPlayers: string[];
   clickThrough: boolean;
   language: Language;
   overlayVisible: boolean;
@@ -210,4 +212,10 @@ export interface BridgeView {
   /** Six digits to enter in the extension; valid while the settings show it. */
   pairingCode: string | null;
   browsers: PairedBrowser[];
+}
+
+/** A player reporting to Singline right now. */
+export interface SeenPlayer {
+  name: string;
+  service: Service;
 }

@@ -22,6 +22,7 @@ pub enum Request {
     Preference {
         source: SourcePreference,
         include_other: bool,
+        ignored: Vec<String>,
     },
     ReloadLyrics {
         refresh: bool,
@@ -192,12 +193,17 @@ pub fn spawn(app: AppHandle, demo: bool, requests: Receiver<Request>) {
 }
 
 fn run(app: &AppHandle, demo: bool, requests: &Receiver<Request>) {
-    let (source, include_other) = {
+    let (source, include_other, ignored) = {
         let state = app.state::<AppState>();
         let settings = state.settings();
-        (settings.source, settings.include_other_players)
+        (
+            settings.source,
+            settings.include_other_players,
+            settings.ignored_players.clone(),
+        )
     };
     let mut engine = Engine::new(source, include_other);
+    engine.set_ignored(&ignored);
     let mut backends: Vec<Box<dyn Backend>> = if demo {
         vec![Box::new(DemoBackend::new())]
     } else {
@@ -226,6 +232,7 @@ fn run(app: &AppHandle, demo: bool, requests: &Receiver<Request>) {
             .iter_mut()
             .flat_map(|backend| backend.poll())
             .collect();
+        crate::players::observe(app, &readings);
         let now_playing = engine.choose(readings.clone());
         crate::history::observe(app, &readings, engine.current());
         let view = PlaybackView::new(&now_playing, Instant::now());
@@ -269,8 +276,10 @@ fn run(app: &AppHandle, demo: bool, requests: &Receiver<Request>) {
                 Ok(Request::Preference {
                     source,
                     include_other,
+                    ignored,
                 }) => {
                     engine.set_preference(source, include_other);
+                    engine.set_ignored(&ignored);
                     break;
                 }
                 Ok(Request::ReloadLyrics { refresh }) => {

@@ -139,6 +139,7 @@ At the first start, a short welcome shows where Singline lives, lets you choose 
 | Fix the timing of all songs | Settings → Song & timing → **Global timing correction** |
 | Choose the player to follow | Tray menu → **Playback source**, or Settings → General |
 | Follow browsers and other players | Settings → General → **Also follow other players** |
+| Never follow a player, such as a browser playing videos | Settings → General → switch it off below **Also follow other players** |
 | Pair the browser extension | Type the code from Settings → General → **Browser extension** into the extension's popup |
 | Control the player | Move the pointer over the overlay for previous, play/pause, next and the seek bar |
 | Jump to a line or the chorus | Click the line, or a chorus marker on the seek bar |

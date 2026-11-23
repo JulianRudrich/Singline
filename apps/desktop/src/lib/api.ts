@@ -8,6 +8,7 @@ import type {
   KaraokeDisplay,
   LyricsView,
   Playback,
+  SeenPlayer,
   Settings,
   SleepView,
   Snapshot,
@@ -26,6 +27,8 @@ export const api = {
   adjustSongOffset: (delta: number) => invoke<number>("adjust_song_offset", { delta }),
   setSongOffset: (value: number) => invoke<number>("set_song_offset", { value }),
   reloadLyrics: () => invoke<void>("reload_lyrics"),
+  /** The players reporting right now, for the list of players to follow. */
+  seenPlayers: () => invoke<SeenPlayer[]>("seen_players"),
   // Own lyrics. Failures reject with an OwnLyricsError or a StampError name.
   openEditor: () => invoke<void>("open_editor"),
   closeEditor: () => invoke<void>("close_editor"),

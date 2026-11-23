@@ -13,6 +13,7 @@ mod menu_panel;
 mod now;
 mod own_lyrics;
 mod playback;
+mod players;
 mod report;
 mod settings;
 mod shuffle;
@@ -115,10 +116,13 @@ impl AppState {
         if old.global_offset != new.global_offset {
             now::update(app);
         }
-        if (old.source, old.include_other_players) != (new.source, new.include_other_players) {
+        if (old.source, old.include_other_players, &old.ignored_players)
+            != (new.source, new.include_other_players, &new.ignored_players)
+        {
             self.request(Request::Preference {
                 source: new.source,
                 include_other: new.include_other_players,
+                ignored: new.ignored_players.clone(),
             });
         }
         if old.lookup_online != new.lookup_online {
@@ -257,6 +261,7 @@ fn setup(app: &mut tauri::App, demo: bool) -> Result<(), Box<dyn std::error::Err
     app.manage(autohide::AutoHideState::new(settings.overlay_visible));
     app.manage(sleep::SleepState::default());
     app.manage(menu_panel::MenuPanel::default());
+    app.manage(players::Players::default());
     app.manage(history::History::default());
     app.manage(dock::Dock::default());
     app.manage(now::Publisher::default());
@@ -392,6 +397,7 @@ fn main() {
             spotify::spotify_open_dashboard,
             spotify::spotify_open,
             spotify::spotify_open_song,
+            players::seen_players,
             spotify::spotify_is_liked,
             spotify::spotify_set_liked,
             spotify::spotify_top,
