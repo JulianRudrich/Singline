@@ -1,14 +1,14 @@
 # Roadmap
 
-Singline is the cross-platform successor of Lyrics Overlay: one code base for Windows, macOS and Linux that works with Spotify, Apple Music, Amazon Music and web players. Until Singline has every feature of the native macOS app in [`apps/macos`](../apps/macos), that app remains available for macOS.
+Singline is the cross-platform successor of Lyrics Overlay: one code base for Windows, macOS and Linux that works with Spotify, Apple Music, Amazon Music and web players. It replaces the native macOS app it grew out of, whose code stays in the repository's history.
 
 ## Principles
 
 | Topic | Decision |
 |---|---|
 | Technology | Tauri 2 with a Rust core and a Svelte 5 and TypeScript interface |
-| License | GPL-3.0-or-later; the native macOS app in `apps/macos` stays under MIT |
-| Repository | One project on `main`: Singline at the top level, the native macOS app in `apps/macos` |
+| License | GPL-3.0-or-later; the native macOS app it replaces stays under MIT in its releases and the history |
+| Repository | One project on `main`; the native macOS app it replaces is in the history |
 | Testing | Linux automatically in CI (virtual display, simulated player and lyrics server); Windows and macOS on real devices with [TESTING.md](TESTING.md) |
 | Scope | Every feature of the native macOS app, including those contributed from Linory, on every system, and more; tracked in [PARITY.md](PARITY.md) |
 | Design | Black and see-through with white lyrics; layout and motion follow the native macOS app |
@@ -53,7 +53,7 @@ Ported from the Swift code contributed from Linory:
 - [x] Any player, and a switch for each one never to follow
 - [ ] Linux: Wayland support through the layer shell, and packages
 
-The first release follows this milestone. Singline then replaces the native macOS app.
+The first release follows this milestone. Singline already replaces the native macOS app, whose code stays in the history.
 
 ### Sing to find
 

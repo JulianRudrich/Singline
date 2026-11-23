@@ -117,9 +117,9 @@ Turn off Settings → General → **Open at login** first, then:
 
 Your settings, lyrics and listening history stay behind; delete the folders listed under [Privacy](#privacy) to remove them too.
 
-### The native macOS app
+### The original macOS app
 
-[`apps/macos`](apps/macos) contains the original macOS app, written in Swift, with the features contributed from Linory. It remains available until Singline has been tested on every system. See its [README](apps/macos/README.md).
+Singline replaces Lyrics Overlay, the native macOS app it grew out of. Its last release is [0.1.0](https://github.com/JulianRudrich/Singline/releases/tag/v0.1.0), and its final code, with the features contributed from Linory, stays in [the repository's history](https://github.com/JulianRudrich/Singline/tree/767b544/apps/macos).
 
 ## Using Singline
 
@@ -235,7 +235,7 @@ For **Sing to find**, Whisper first turns your singing into words on your comput
 
 **My player is not in the list. Does Singline work with it?** On Windows and Linux, most likely: turn on Settings → General → **Also follow other players**, and Singline follows any player that reports to the system's media controls on Windows or through MPRIS on Linux, as most desktop players and browsers do. On macOS it follows Spotify, Music and the web players the browser extension supports. Tidal and Deezer in the browser extension are planned.
 
-**How is Singline related to Lyrics Overlay and Linory?** Singline is the successor of Lyrics Overlay, the native macOS app in [`apps/macos`](apps/macos). Linory is a macOS fork of it whose features came back in [#1](https://github.com/JulianRudrich/Singline/pull/1); Singline brings them to Windows, macOS and Linux.
+**How is Singline related to Lyrics Overlay and Linory?** Singline is the successor of Lyrics Overlay, the native macOS app it grew out of (see [The original macOS app](#the-original-macos-app)). Linory is a macOS fork of it whose features came back in [#1](https://github.com/JulianRudrich/Singline/pull/1); Singline brings them to Windows, macOS and Linux.
 
 ## Troubleshooting
 
@@ -337,7 +337,6 @@ pnpm build
 | [`apps/desktop`](apps/desktop) | The Singline app: Tauri and Rust in `src-tauri`, the Svelte interface in `src`, the end-to-end tests in `e2e` |
 | [`extensions/browser`](extensions/browser) | The browser extension for web players, for Chrome, Edge and Firefox |
 | [`extensions/pi`](extensions/pi) | The extension that shows the line being sung in pi's footer |
-| [`apps/macos`](apps/macos) | The native macOS app in Swift |
 | [`site`](site) | The website, published to GitHub Pages |
 | [`scripts`](scripts) | Helpers for the builds: version numbers, the update manifest and the website |
 | [`docs`](docs) | Architecture, roadmap, feature parity, test guide, release process and measurements; [docs/README.md](docs/README.md) lists them all |
@@ -385,6 +384,6 @@ Bug reports, translations and pull requests are welcome. [CONTRIBUTING.md](CONTR
 
 ## License
 
-Singline is free software under the [GNU General Public License v3.0 or later](LICENSE). The native macOS app in [`apps/macos`](apps/macos) and releases up to 0.1.0 are available under the [MIT License](apps/macos/LICENSE).
+Singline is free software under the [GNU General Public License v3.0 or later](LICENSE). Lyrics Overlay, the original macOS app, is available under the [MIT License](https://github.com/JulianRudrich/Singline/blob/v0.1.0/LICENSE) in its releases up to 0.1.0 and in the repository's history.
 
 Song lyrics belong to their rights holders. Singline is not affiliated with Spotify, Apple, Amazon, Google or LRCLIB.

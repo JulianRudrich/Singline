@@ -174,4 +174,4 @@ To connect the language yourself:
 
 ## License
 
-By contributing, you agree that your contribution is licensed under the [GNU General Public License v3.0 or later](LICENSE), like the rest of Singline. Contributions to the native macOS app in [`apps/macos`](apps/macos) are licensed under the [MIT License](apps/macos/LICENSE).
+By contributing, you agree that your contribution is licensed under the [GNU General Public License v3.0 or later](LICENSE), like the rest of Singline.

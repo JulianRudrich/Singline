@@ -10,11 +10,6 @@ dist/
 # The website, put together by scripts/build-site.sh
 /_site/
 
-# macOS app (SwiftPM)
-.build/
-.swiftpm/
-Lyrics Overlay.app/
-
 # Logs and test artifacts
 *.log
 /test-results/

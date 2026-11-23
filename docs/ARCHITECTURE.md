@@ -17,7 +17,6 @@ Singline is a [Tauri 2](https://tauri.app) app. A Rust process reads the players
 | [`apps/desktop/src`](../apps/desktop/src) | The Svelte 5 interface: one page for every window, the texts in `locales`, and the timing and layout helpers in `lib`. |
 | [`extensions/browser`](../extensions/browser) | The browser extension for Chrome, Edge and Firefox that reports web players to the app. |
 | [`extensions/pi`](../extensions/pi) | The extension for pi that shows the current line in its footer. |
-| [`apps/macos`](../apps/macos) | The original native macOS app in Swift. It shares no code with the rest. |
 
 ## From the player to the screen
 

@@ -7,7 +7,6 @@ extend-exclude = [
   # German texts
   "apps/desktop/src/locales/de.json",
   "extensions/browser/_locales/de/",
-  "apps/macos/Sources/LyricsCore/Localization.swift",
 ]
 
 [default]
