@@ -1,11 +1,14 @@
 //! The overlay, settings, welcome, lyrics editor and karaoke windows.
 
+use std::sync::atomic::{AtomicU64, Ordering};
+use std::time::Duration;
+
 use serde::Serialize;
 use tauri::utils::config::WindowEffectsConfig;
 use tauri::window::Color;
 use tauri::{
-    AppHandle, LogicalPosition, LogicalSize, Manager, Monitor, Theme, WebviewUrl, WebviewWindow,
-    WebviewWindowBuilder, WindowEvent,
+    AppHandle, Emitter, LogicalPosition, LogicalSize, Manager, Monitor, Theme, WebviewUrl,
+    WebviewWindow, WebviewWindowBuilder, WindowEvent,
 };
 
 use crate::settings::{Corner, Settings};
@@ -98,18 +101,41 @@ pub fn set_click_through(app: &AppHandle, enabled: bool) {
     }
 }
 
+/// How long the overlay has to fade out before its window hides. Its last
+/// frame is then clear, so it comes back without a flash of old lyrics.
+const OVERLAY_FADE: Duration = Duration::from_millis(180);
+
+/// Counts the overlay's shows and hides, so a hide still waiting for the fade
+/// is dropped when the overlay is shown again meanwhile.
+static OVERLAY_CHANGES: AtomicU64 = AtomicU64::new(0);
+
+/// Shows or hides the overlay. The page fades in or out on the
+/// `overlay-visibility` event; hiding waits for its fade.
 pub fn set_overlay_visible(app: &AppHandle, visible: bool) {
-    if let Some(window) = app.get_webview_window(OVERLAY) {
-        let _ = if visible {
-            window.show()
-        } else {
-            window.hide()
-        };
-        if visible {
-            // Some window managers forget "always on top" while a window is hidden.
-            let _ = window.set_always_on_top(true);
-        }
+    let Some(window) = app.get_webview_window(OVERLAY) else {
+        return;
+    };
+    let change = OVERLAY_CHANGES.fetch_add(1, Ordering::SeqCst) + 1;
+    let _ = app.emit_to(OVERLAY, "overlay-visibility", visible);
+    if visible {
+        let _ = window.show();
+        // Some window managers forget "always on top" while a window is hidden.
+        let _ = window.set_always_on_top(true);
+        return;
     }
+    let app = app.clone();
+    tauri::async_runtime::spawn(async move {
+        tokio::time::sleep(OVERLAY_FADE).await;
+        let handle = app.clone();
+        let _ = app.run_on_main_thread(move || {
+            if OVERLAY_CHANGES.load(Ordering::SeqCst) != change {
+                return;
+            }
+            if let Some(window) = handle.get_webview_window(OVERLAY) {
+                let _ = window.hide();
+            }
+        });
+    });
 }
 
 pub fn toggle_overlay(app: &AppHandle) {

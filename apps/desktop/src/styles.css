@@ -71,6 +71,16 @@ html[data-view="menu"] body {
   overflow: hidden;
 }
 
+/* The overlay fades in when it is shown, and out before its window hides. */
+html[data-view="overlay"] {
+  transition: opacity var(--duration-pane) var(--ease-out);
+}
+
+html[data-view="overlay"][data-hidden] {
+  opacity: 0;
+  transition-duration: var(--duration-dismiss);
+}
+
 /* Karaoke is black from the first paint. */
 html[data-view="karaoke"],
 html[data-view="karaoke"] body {

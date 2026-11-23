@@ -73,6 +73,8 @@ export interface Listeners {
   sleep?: (sleep: SleepView) => void;
   /** The tray panel opens (play the entrance) or closes (fade out). */
   menuPanel?: (event: { open: boolean }) => void;
+  /** The overlay is shown (fade in) or about to hide (fade out first). */
+  overlayVisibility?: (visible: boolean) => void;
 }
 
 /** Subscribes to the events the Rust side sends; returns one function to stop. */
@@ -84,6 +86,8 @@ export async function subscribe(listeners: Listeners): Promise<UnlistenFn> {
     listeners.app && listen<AppInfo>("app", (event) => listeners.app?.(event.payload)),
     listeners.sleep && listen<SleepView>("sleep", (event) => listeners.sleep?.(event.payload)),
     listeners.menuPanel && listen<{ open: boolean }>("menu-panel", (event) => listeners.menuPanel?.(event.payload)),
+    listeners.overlayVisibility &&
+      listen<boolean>("overlay-visibility", (event) => listeners.overlayVisibility?.(event.payload)),
   ]);
   return () => stops.forEach((stop) => stop?.());
 }

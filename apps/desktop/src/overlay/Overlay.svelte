@@ -168,6 +168,18 @@
     void getCurrentWindow().startDragging();
   }
 
+  // The page fades out before the window hides and keeps that clear frame
+  // while hidden, so the window never comes back showing old lyrics. It fades
+  // in once the window is on screen again: animation frames only run then.
+  function overlayVisibility(visible: boolean) {
+    const root = document.documentElement;
+    if (!visible) {
+      root.dataset.hidden = "";
+      return;
+    }
+    requestAnimationFrame(() => requestAnimationFrame(() => delete root.dataset.hidden));
+  }
+
   function drag(event: PointerEvent) {
     if (event.button !== 0 || (event.target as HTMLElement).closest("button, [data-no-drag]")) return;
     startWindowDrag();
@@ -182,6 +194,7 @@
         lyrics: (next) => (lyricsView = next),
         settings: (next) => (settings = next),
         app: (next) => (app = next),
+        overlayVisibility,
       });
       const unlistenSing = await onSing({
         view: (next) => (singView = next),
