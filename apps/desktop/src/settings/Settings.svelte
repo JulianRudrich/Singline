@@ -13,8 +13,11 @@
   let lyricsView = $state<LyricsView | null>(null);
   let app = $state<AppInfo | null>(null);
   let selected = $state(panes[0]?.id ?? "");
-  /** The first pane appears with the window; later ones fade in. */
-  let switched = $state(false);
+  /**
+   * Which way the last pane change went in the list: 1 down, -1 up. The first
+   * pane appears with the window (0); later ones come in from that side.
+   */
+  let direction = $state(0);
   let content = $state<HTMLElement>();
 
   const language = $derived(app?.language ?? "en");
@@ -84,8 +87,9 @@
 
   function select(id: string) {
     if (id === selected) return;
+    const order = (paneId: string) => panes.findIndex((entry) => entry.id === paneId);
+    direction = order(id) < order(selected) ? -1 : 1;
     selected = id;
-    switched = true;
     content?.scrollTo({ top: 0 });
   }
 
@@ -143,7 +147,7 @@
     </Sidebar>
     <div class="content" id="settings-pane" role="tabpanel" aria-labelledby="tab-{pane.id}" bind:this={content}>
       {#key pane.id}
-        <div use:paneIn={switched}>
+        <div use:paneIn={direction}>
           <header>
             <h1>{t(pane.title)}</h1>
             <p>{t(pane.subtitle)}</p>

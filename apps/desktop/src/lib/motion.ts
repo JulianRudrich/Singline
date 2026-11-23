@@ -202,12 +202,15 @@ export function prefersReducedMotion(): boolean {
   return typeof matchMedia === "function" && matchMedia("(prefers-reduced-motion: reduce)").matches;
 }
 
-/** Keyframes for content coming in. With reduced motion it only fades. */
-export function entranceKeyframes(kind: "pane" | "reveal", reduced: boolean): Keyframe[] {
+/**
+ * Keyframes for content coming in. A pane rises from below, or with
+ * `direction` -1 comes down from above. With reduced motion it only fades.
+ */
+export function entranceKeyframes(kind: "pane" | "reveal", reduced: boolean, direction = 1): Keyframe[] {
   if (reduced) return [{ opacity: 0 }, { opacity: 1 }];
   if (kind === "pane") {
     return [
-      { opacity: 0, transform: `translateY(${rise.pane}px)` },
+      { opacity: 0, transform: `translateY(${direction < 0 ? -rise.pane : rise.pane}px)` },
       { opacity: 1, transform: "none" },
     ];
   }
@@ -226,9 +229,9 @@ export function panelKeyframes(reduced: boolean): Keyframe[] {
   ];
 }
 
-function enter(node: HTMLElement, kind: "pane" | "reveal", delay: number) {
+function enter(node: HTMLElement, kind: "pane" | "reveal", delay: number, direction = 1) {
   if (typeof node.animate !== "function") return;
-  node.animate(entranceKeyframes(kind, prefersReducedMotion()), {
+  node.animate(entranceKeyframes(kind, prefersReducedMotion(), direction), {
     duration: duration[kind],
     delay,
     easing: easeOutCss,
@@ -236,9 +239,13 @@ function enter(node: HTMLElement, kind: "pane" | "reveal", delay: number) {
   });
 }
 
-/** Svelte action: a newly shown pane fades in while rising 6 px. Pass `false` to skip it. */
-export function paneIn(node: HTMLElement, enabled = true) {
-  if (enabled) enter(node, "pane", 0);
+/**
+ * Svelte action: a newly shown pane fades in while it moves 6 px the way the
+ * listener went: up for a pane further down the list (`direction` 1), down for
+ * one further up (-1). 0 shows it at once.
+ */
+export function paneIn(node: HTMLElement, direction = 1) {
+  if (direction !== 0) enter(node, "pane", 0, direction);
 }
 
 /**

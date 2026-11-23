@@ -159,6 +159,9 @@ describe("motion tokens", () => {
     }
     expect(entranceKeyframes("reveal", false)[0]).toMatchObject({ filter: "blur(6px)", transform: "translateY(8px)" });
     expect(entranceKeyframes("pane", false)[0]).toEqual({ opacity: 0, transform: "translateY(6px)" });
+    // A pane further up the list comes down from above.
+    expect(entranceKeyframes("pane", false, -1)[0]).toEqual({ opacity: 0, transform: "translateY(-6px)" });
+    expect(entranceKeyframes("pane", true, -1)).toEqual([{ opacity: 0 }, { opacity: 1 }]);
     expect(panelKeyframes(true)).toEqual([{ opacity: 0 }, { opacity: 1 }]);
     expect(panelKeyframes(false)[0]).toEqual({ opacity: 0, transform: "translateY(8px)" });
   });
