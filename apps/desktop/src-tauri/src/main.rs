@@ -391,6 +391,7 @@ fn main() {
             spotify::spotify_disconnect,
             spotify::spotify_open_dashboard,
             spotify::spotify_open,
+            spotify::spotify_open_song,
             spotify::spotify_is_liked,
             spotify::spotify_set_liked,
             spotify::spotify_top,

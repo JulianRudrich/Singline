@@ -12,7 +12,7 @@
   import type { Capabilities, Track } from "../lib/types";
   import LikeButton from "../spotify/LikeButton.svelte";
   import Controls from "./Controls.svelte";
-  import Cover from "./Cover.svelte";
+  import CoverLink from "./CoverLink.svelte";
 
   interface Props {
     track: Track | null;
@@ -30,9 +30,11 @@
     t: Translate;
     onsettings: () => void;
     onsing: () => void;
+    /** Opens the song in Spotify from its cover; left out for other players. */
+    onopen?: () => void;
   }
 
-  let { track, playerName, controls, playing, notSynced, ownLyrics, paused, mic, singing, t, onsettings, onsing }: Props =
+  let { track, playerName, controls, playing, notSynced, ownLyrics, paused, mic, singing, t, onsettings, onsing, onopen }: Props =
     $props();
 
   const details = $derived(track ? [track.title, track.artist, playerName].filter(Boolean).join(" · ") : undefined);
@@ -45,7 +47,7 @@
   <div class="now-playing" title={details}>
     {#key track?.key ?? ""}
       <div class="song" out:songExit={{ reduced: prefersReducedMotion.current }}>
-        <div class="reveal"><Cover url={track?.artworkUrl ?? null} /></div>
+        <div class="reveal"><CoverLink url={track?.artworkUrl ?? null} label={t("overlay.openInSpotify")} {onopen} /></div>
         <div class="names">
           <span class="title reveal" style:animation-delay="0.05s">{track?.title ?? t("app.name")}</span>
           {#if track?.artist}

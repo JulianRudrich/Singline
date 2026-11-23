@@ -13,6 +13,7 @@
   import { statusText } from "../lib/status";
   import type { AppInfo, LyricLine, LyricsView, Playback, Settings } from "../lib/types";
   import { isActive, onSing, sing as singApi, type ModelView, type SingView } from "../sing/api";
+  import { spotify } from "../spotify/api";
   import Header from "./Header.svelte";
   import LyricLines from "./LyricLines.svelte";
   import Scrubber from "./Scrubber.svelte";
@@ -33,6 +34,13 @@
   const t = $derived(translator(app?.language ?? "en"));
 
   const track = $derived(playback?.state === "track" ? playback.track : null);
+  // A song playing in Spotify opens there from its cover.
+  const openInSpotify = $derived.by(() => {
+    const song = track;
+    const player = playback?.player;
+    if (!song || player?.service !== "spotify") return undefined;
+    return () => void spotify.openSong(song, player.web);
+  });
   const lyrics = $derived(
     lyricsView?.status === "ready" && lyricsView.lyrics && lyricsView.trackKey === track?.key
       ? lyricsView.lyrics
@@ -249,6 +257,7 @@
       {t}
       onsettings={() => api.openSettings()}
       onsing={() => singApi.toggle()}
+      onopen={openInSpotify}
     />
   {/if}
 

@@ -3,6 +3,7 @@
 //! tokens stay inside `spotify-connect`; nothing here logs them.
 
 use std::collections::HashMap;
+use std::fmt::Write as _;
 use std::fs;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex, MutexGuard};
@@ -579,6 +580,65 @@ pub async fn spotify_open(uri: String) -> Result<(), String> {
     open_item(&uri).await
 }
 
+/// Opens the song playing in Spotify: by its link where the player reported
+/// one, otherwise as a search for its title and artist, as on Windows, which
+/// does not tell Spotify's track IDs. `web` opens the web player instead of
+/// the app, for a song playing in the browser.
+#[tauri::command]
+pub async fn spotify_open_song(
+    uri: Option<String>,
+    title: String,
+    artist: String,
+    web: bool,
+) -> Result<(), String> {
+    let (app_link, web_link) =
+        song_links(uri.as_deref(), &title, &artist).ok_or("no song to open")?;
+    if !web && open_external(app_link).await.is_ok() {
+        return Ok(());
+    }
+    open_external(web_link).await
+}
+
+/// Where a song opens in the Spotify app and on the web: its track, or a
+/// search for its title and artist.
+fn song_links(uri: Option<&str>, title: &str, artist: &str) -> Option<(String, String)> {
+    if let Some((kind, id)) = uri
+        .and_then(spotify_item)
+        .filter(|(kind, _)| *kind == "track")
+    {
+        return Some((
+            format!("spotify:{kind}:{id}"),
+            format!("https://open.spotify.com/{kind}/{id}"),
+        ));
+    }
+    let query = [title.trim(), artist.trim()]
+        .into_iter()
+        .filter(|part| !part.is_empty())
+        .collect::<Vec<_>>()
+        .join(" ");
+    if query.is_empty() {
+        return None;
+    }
+    let query = encode(&query);
+    Some((
+        format!("spotify:search:{query}"),
+        format!("https://open.spotify.com/search/{query}"),
+    ))
+}
+
+/// Percent-encodes all but letters, digits and `-_.~`, for a link.
+fn encode(text: &str) -> String {
+    let mut encoded = String::with_capacity(text.len());
+    for byte in text.bytes() {
+        if byte.is_ascii_alphanumeric() || matches!(byte, b'-' | b'_' | b'.' | b'~') {
+            encoded.push(char::from(byte));
+        } else {
+            let _ = write!(encoded, "%{byte:02X}");
+        }
+    }
+    encoded
+}
+
 /// Whether the song is in Liked Songs; `None` without a connection.
 #[tauri::command]
 pub async fn spotify_is_liked(app: AppHandle, uri: String) -> Result<Option<bool>, String> {
@@ -648,6 +708,38 @@ pub async fn spotify_top(app: AppHandle, range: TimeRange) -> Result<TopLists, S
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_song_opens_by_its_track_or_else_by_a_search() {
+        assert_eq!(
+            song_links(
+                Some("spotify:track:4uLU6hMCjMI75M1A2tKUQC"),
+                "Lady of Namek",
+                "Tory Lanez"
+            ),
+            Some((
+                "spotify:track:4uLU6hMCjMI75M1A2tKUQC".into(),
+                "https://open.spotify.com/track/4uLU6hMCjMI75M1A2tKUQC".into()
+            ))
+        );
+        // Windows reports no track; an episode is no song to open.
+        for uri in [None, Some("spotify:episode:1a2b"), Some("not a link")] {
+            assert_eq!(
+                song_links(uri, "Lady of Namek", "Tory Lanez"),
+                Some((
+                    "spotify:search:Lady%20of%20Namek%20Tory%20Lanez".into(),
+                    "https://open.spotify.com/search/Lady%20of%20Namek%20Tory%20Lanez".into()
+                ))
+            );
+        }
+        assert_eq!(song_links(None, "  ", ""), None);
+    }
+
+    #[test]
+    fn search_words_are_encoded_for_a_link() {
+        assert_eq!(encode("Beyoncé & Jay-Z"), "Beyonc%C3%A9%20%26%20Jay-Z");
+        assert_eq!(encode("AC/DC #1?"), "AC%2FDC%20%231%3F");
+    }
 
     #[test]
     fn opens_only_spotify_items() {

@@ -4,6 +4,7 @@
 import { invoke } from "@tauri-apps/api/core";
 import { listen, type UnlistenFn } from "@tauri-apps/api/event";
 import type { MessageKey, Translate } from "../lib/i18n";
+import type { Track } from "../lib/types";
 
 export type SpotifyPhase = "disconnected" | "waiting" | "connecting" | "connected" | "failed";
 
@@ -54,6 +55,9 @@ export const spotify = {
   disconnect: () => invoke<SpotifyStatus>("spotify_disconnect"),
   openDashboard: () => invoke<void>("spotify_open_dashboard"),
   open: (uri: string) => invoke<void>("spotify_open", { uri }),
+  /** Opens the song in Spotify: by its track where known, else as a search. */
+  openSong: (track: Track, web: boolean) =>
+    invoke<void>("spotify_open_song", { uri: track.sourceId, title: track.title, artist: track.artist, web }),
   isLiked: (uri: string) => invoke<boolean | null>("spotify_is_liked", { uri }),
   setLiked: (uri: string, liked: boolean) => invoke<boolean>("spotify_set_liked", { uri, liked }),
   top: (range: TimeRange) => invoke<TopLists>("spotify_top", { range }),

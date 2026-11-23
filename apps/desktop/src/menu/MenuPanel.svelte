@@ -16,10 +16,11 @@
   import { radioMove } from "../lib/ui/radio";
   import Toggle from "../lib/ui/Toggle.svelte";
   import Controls from "../overlay/Controls.svelte";
-  import Cover from "../overlay/Cover.svelte";
+  import CoverLink from "../overlay/CoverLink.svelte";
   import Scrubber from "../overlay/Scrubber.svelte";
   import { shuffle } from "../shuffle/api";
   import { isActive, onSing, sing, type SingView } from "../sing/api";
+  import { spotify } from "../spotify/api";
   import LikeButton from "../spotify/LikeButton.svelte";
   import MenuRow from "./MenuRow.svelte";
 
@@ -38,6 +39,13 @@
   const mac = $derived(app?.platform === "macos");
   const track = $derived(playback?.state === "track" ? playback.track : null);
   const playerName = $derived(playback?.player?.name ?? "");
+  // A song playing in Spotify opens there from its cover.
+  const openInSpotify = $derived.by(() => {
+    const song = track;
+    const player = playback?.player;
+    if (!song || player?.service !== "spotify") return undefined;
+    return () => void spotify.openSong(song, player.web);
+  });
   const details = $derived(track ? [track.title, track.artist, playerName].filter(Boolean).join(" · ") : undefined);
   const capabilities = $derived(playback?.capabilities);
   const transport = $derived(
@@ -220,7 +228,7 @@
       <section class="now" title={details}>
         <div class="song">
           {#if track}
-            <Cover url={track.artworkUrl} size={44} />
+            <CoverLink url={track.artworkUrl} size={44} label={t("overlay.openInSpotify")} onopen={openInSpotify} />
           {:else}
             <Mark size={44} />
           {/if}

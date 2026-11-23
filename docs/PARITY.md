@@ -35,7 +35,7 @@ Before its first release, Singline must offer every feature of the native macOS 
 | Jumping to a line by clicking it | ✅ | 🧪 | 🧪 | |
 | Chorus markers | ✅ | 🧪 | 🧪 | |
 | ♥ (Spotify) | ✅ | ⬜ | 🧪 | Windows does not report Spotify's track IDs |
-| Open in Spotify | ⬜ | ⬜ | ⬜ | |
+| Open in Spotify | 🧪 | 🧪 | 🧪 | A click on the cover; Windows opens a search, as it reports no track IDs |
 
 ## Sync and lyrics
 

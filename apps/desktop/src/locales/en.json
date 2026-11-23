@@ -35,6 +35,7 @@
   "corner.topRight": "Top right",
   "corner.bottomLeft": "Bottom left",
   "corner.bottomRight": "Bottom right",
+  "overlay.openInSpotify": "Open in Spotify",
   "overlay.openSettings": "Open settings and timing",
   "overlay.retry": "Search lyrics again",
   "overlay.paused": "Paused",
