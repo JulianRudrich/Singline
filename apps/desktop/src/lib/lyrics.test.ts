@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { currentIndex, estimatedWords, lineFills, lineText, UNSUNG, wordFills, wordOpacity } from "./lyrics";
+import { currentIndex, estimatedWords, lineFills, lineText, UNSUNG, wordFills, wordOpacity, wordWipe } from "./lyrics";
 import type { LyricLine } from "./types";
 
 const lines: LyricLine[] = [
@@ -133,6 +133,26 @@ describe("lineFills", () => {
 
   it("leaves plain lyrics without word highlight", () => {
     expect(lineFills(line, 14, 10.6, "unsynced")).toEqual([]);
+  });
+});
+
+describe("wordWipe", () => {
+  it("needs no mask before a word begins or after it ends", () => {
+    expect(wordWipe(0, UNSUNG)).toBeNull();
+    expect(wordWipe(1, UNSUNG)).toBeNull();
+    expect(wordWipe(Number.NaN, UNSUNG)).toBeNull();
+  });
+
+  it("runs a soft edge from bright to the unsung opacity through the word", () => {
+    expect(wordWipe(0.5, UNSUNG)).toBe(
+      "linear-gradient(90deg, #000 calc(0.5000 * (100% + 0.6em) - 0.6em), rgb(0 0 0 / 0.300) calc(0.5000 * (100% + 0.6em)))",
+    );
+  });
+
+  it("moves the edge along as the word is sung", () => {
+    const edge = (fill: number) => Number(wordWipe(fill, UNSUNG)?.match(/calc\(([\d.]+) \*/)?.[1]);
+    expect(edge(0.1)).toBeLessThan(edge(0.6));
+    expect(edge(0.6)).toBeLessThan(edge(0.99));
   });
 });
 

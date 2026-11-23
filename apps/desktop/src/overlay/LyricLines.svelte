@@ -8,7 +8,7 @@
   import { onDestroy, untrack } from "svelte";
   import { prefersReducedMotion } from "svelte/motion";
   import type { Translate } from "../lib/i18n";
-  import { clamp, lineFills, lineText, wordOpacity } from "../lib/lyrics";
+  import { clamp, lineFills, lineText, wordOpacity, wordWipe } from "../lib/lyrics";
   import type { Measure } from "../lib/measure";
   import { RowMotion, type MovingRow } from "../lib/rows";
   import type { Layout, LyricLine, SyncLevel } from "../lib/types";
@@ -250,7 +250,8 @@
   {#if active && waiting !== null}
     <BreakDots progress={waiting} size={fontSize} breathing={playing} />
   {:else if active && fills.length > 0}
-    {#each fills as word, index (index)}<span style:opacity={wordOpacity(word.fill, brightness, NEAR).toFixed(3)}>{word.text}</span>{/each}
+    <!-- The word being sung lights up from left to right; the others only need their opacity. -->
+    {#each fills as word, index (index)}{@const wipe = wordWipe(word.fill, wordOpacity(0, brightness, NEAR))}<span class:wipe={wipe !== null} style:--wipe={wipe} style:opacity={wipe === null ? wordOpacity(word.fill, brightness, NEAR).toFixed(3) : null}>{word.text}</span>{/each}
   {:else if line}
     {lineText(line)}
   {/if}

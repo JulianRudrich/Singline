@@ -9,7 +9,7 @@
   import { prefersReducedMotion } from "svelte/motion";
   import type { Translate } from "../lib/i18n";
   import { karaokeSlots, UPCOMING_OPACITY, type Scene } from "../lib/karaoke";
-  import { lineFills, wordOpacity } from "../lib/lyrics";
+  import { lineFills, wordOpacity, wordWipe } from "../lib/lyrics";
   import type { Measure } from "../lib/measure";
   import { RowMotion, type MovingRow } from "../lib/rows";
   import type { LyricLine, SyncLevel } from "../lib/types";
@@ -125,7 +125,7 @@
           <BreakDots progress={0} size={fontSize} breathing={false} centered />
         {:else if line && row.place === 0 && fills.length > 0}
           <!-- The words start out as bright as the line was while it waited below. -->
-          {#each fills as word, index (index)}<span style:opacity={wordOpacity(word.fill, opacity, UPCOMING_OPACITY[0]).toFixed(3)}>{word.text}</span>{/each}
+          {#each fills as word, index (index)}{@const wipe = wordWipe(word.fill, wordOpacity(0, opacity, UPCOMING_OPACITY[0]))}<span class:wipe={wipe !== null} style:--wipe={wipe} style:opacity={wipe === null ? wordOpacity(word.fill, opacity, UPCOMING_OPACITY[0]).toFixed(3) : null}>{word.text}</span>{/each}
         {:else if line}
           {line.text}
         {/if}

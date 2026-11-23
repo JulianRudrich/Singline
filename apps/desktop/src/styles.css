@@ -71,6 +71,12 @@ html[data-view="menu"] body {
   overflow: hidden;
 }
 
+/* A word being sung lights up from left to right, behind a mask from wordWipe. */
+.wipe {
+  -webkit-mask-image: var(--wipe);
+  mask-image: var(--wipe);
+}
+
 /* The overlay fades in when it is shown, and out before its window hides. */
 html[data-view="overlay"] {
   transition: opacity var(--duration-pane) var(--ease-out);

@@ -97,6 +97,23 @@ export function wordOpacity(fill: number, row: number, neighbour: number): numbe
   return unsung + (1 - unsung) * clamp(fill, 0, 1);
 }
 
+/** How wide the soft edge that runs through a word being sung is, in em. */
+const WIPE_EDGE = 0.6;
+
+/**
+ * The mask that lights a word up from left to right while it is sung: full
+ * brightness up to a soft edge, `unsung` opacity after it. The edge starts
+ * before the word and ends after it, so the word is evenly dim as it begins
+ * and evenly bright as it ends. Words not yet begun or already sung need no
+ * mask: null, and their opacity alone shows them.
+ */
+export function wordWipe(fill: number, unsung: number): string | null {
+  if (!(fill > 0 && fill < 1)) return null;
+  const done = `${fill.toFixed(4)} * (100% + ${WIPE_EDGE}em)`;
+  const dim = `rgb(0 0 0 / ${clamp(unsung, 0, 1).toFixed(3)})`;
+  return `linear-gradient(90deg, #000 calc(${done} - ${WIPE_EDGE}em), ${dim} calc(${done}))`;
+}
+
 /** Display text for a line; an empty line is an instrumental break. */
 export function lineText(line: LyricLine | undefined): string {
   if (!line) return "";
