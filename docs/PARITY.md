@@ -23,7 +23,7 @@ Before its first release, Singline must offer every feature of the native macOS 
 | Estimated word highlight for line-synced lyrics | ✅ | 🧪 | 🧪 | |
 | Scrolling lines and smooth song changes | ✅ | 🧪 | 🧪 | |
 | Splitting long lines | ✅ | 🧪 | 🧪 | |
-| Cover art | 🧪 | 🧪 | 🧪 | Windows: thumbnail of the media session; macOS: Spotify only so far |
+| Cover art | 🧪 | 🧪 | 🧪 | Windows: thumbnail of the media session; macOS: Spotify's picture address, and the picture Music hands over |
 | Hiding while nothing plays | 🧪 | 🧪 | 🧪 | |
 
 ## Mini-player

@@ -16,7 +16,7 @@
 //! [`MicrophoneBackend`] reports the song someone sings, for Sing to find.
 
 pub mod applescript;
-#[cfg(any(windows, test))]
+#[cfg(any(windows, target_os = "macos", test))]
 mod artwork;
 mod backend;
 pub mod bridge;

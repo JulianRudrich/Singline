@@ -8,7 +8,11 @@
 //!
 //! Building the script and parsing its output are plain functions, tested on
 //! every system. Only running it is macOS-specific.
+//!
+//! Music has no address for its cover art, only the picture, so a second
+//! script saves it to a file once per song, in the background.
 
+use std::sync::mpsc::{Receiver, TryRecvError};
 use std::time::Instant;
 
 use crate::model::{
@@ -153,6 +157,78 @@ on readMusic(fs)
 	end try
 end readMusic
 "#;
+
+/// Saves the cover art of the song Music plays, as it comes, to the file the
+/// first argument names. Answers "ok", or "none" without a picture.
+pub const MUSIC_ARTWORK_SCRIPT: &str = r#"
+on run argv
+	set outPath to item 1 of argv
+	try
+		tell application id "com.apple.Music"
+			if (count of artworks of current track) is 0 then return "none"
+			set artData to raw data of artwork 1 of current track
+		end tell
+	on error
+		return "none"
+	end try
+	try
+		set outFile to open for access (POSIX file outPath) with write permission
+		set eof outFile to 0
+		write artData to outFile
+		close access outFile
+	on error
+		try
+			close access (POSIX file outPath)
+		end try
+		return "error"
+	end try
+	return "ok"
+end run
+"#;
+
+/// Music's cover art for the song playing: fetched in the background once per
+/// song, and a few more times while Music has not loaded the picture yet.
+#[derive(Debug, Default)]
+pub struct ArtworkCache {
+    song: Option<String>,
+    picture: Option<String>,
+    tries: u8,
+    pending: Option<Receiver<Option<String>>>,
+}
+
+impl ArtworkCache {
+    const TRIES: u8 = 3;
+
+    /// The picture of `song` as far as it is known. `start` begins fetching
+    /// it in the background and answers on the returned channel.
+    pub fn picture(
+        &mut self,
+        song: &str,
+        start: impl FnOnce() -> Receiver<Option<String>>,
+    ) -> Option<String> {
+        if self.song.as_deref() != Some(song) {
+            *self = Self {
+                song: Some(song.to_owned()),
+                ..Self::default()
+            };
+        }
+        if let Some(pending) = &self.pending {
+            match pending.try_recv() {
+                Ok(picture) => {
+                    self.picture = picture;
+                    self.pending = None;
+                }
+                Err(TryRecvError::Disconnected) => self.pending = None,
+                Err(TryRecvError::Empty) => {}
+            }
+        }
+        if self.picture.is_none() && self.pending.is_none() && self.tries < Self::TRIES {
+            self.tries += 1;
+            self.pending = Some(start());
+        }
+        self.picture.clone()
+    }
+}
 
 /// The players a `ps -axww -o comm=` listing shows as running.
 pub fn running_players(ps_output: &str) -> Vec<MacPlayer> {
@@ -394,16 +470,81 @@ pub use runner::AppleScriptBackend;
 
 #[cfg(target_os = "macos")]
 mod runner {
+    use std::sync::atomic::{AtomicU64, Ordering};
+    use std::sync::mpsc::{self, Receiver};
     use std::time::{Duration, Instant};
 
-    use super::{command_script, parse_output, read_script, run, running_players, MacPlayer};
+    use super::{
+        command_script, parse_output, read_script, run, running_players, ArtworkCache, MacPlayer,
+        MUSIC_ARTWORK_SCRIPT,
+    };
+    use crate::artwork::image_data_url;
     use crate::backend::{Backend, CommandError};
-    use crate::model::{Command, PlayerId, Problem, Reading};
+    use crate::model::{Command, PlayerId, Problem, Reading, Service};
 
     /// Reads Spotify and Music with `osascript`.
     #[derive(Debug, Default)]
     pub struct AppleScriptBackend {
         last_error: Option<String>,
+        music_artwork: ArtworkCache,
+    }
+
+    /// Fetches Music's cover art on a thread of its own.
+    fn fetch_music_artwork() -> Receiver<Option<String>> {
+        let (sender, receiver) = mpsc::channel();
+        std::thread::spawn(move || {
+            let _ = sender.send(music_artwork());
+        });
+        receiver
+    }
+
+    /// Music's cover art of the song playing as a `data:` URL. A picture too
+    /// large to send with every reading, or of a type the overlay cannot show,
+    /// becomes a smaller JPEG with `sips`, which every Mac has.
+    fn music_artwork() -> Option<String> {
+        static FETCHES: AtomicU64 = AtomicU64::new(0);
+        let folder = std::env::temp_dir();
+        let name = format!(
+            "singline-music-artwork-{}-{}",
+            std::process::id(),
+            FETCHES.fetch_add(1, Ordering::Relaxed)
+        );
+        let raw = folder.join(&name);
+        let small = folder.join(format!("{name}.jpg"));
+        let picture = (|| {
+            let answer = run(
+                "/usr/bin/osascript",
+                &["-e", MUSIC_ARTWORK_SCRIPT, raw.to_str()?],
+                Duration::from_secs(5),
+            )
+            .ok()?;
+            if answer.trim() != "ok" {
+                return None;
+            }
+            let bytes = std::fs::read(&raw).ok()?;
+            if let Some(url) = image_data_url(&bytes) {
+                return Some(url);
+            }
+            run(
+                "/usr/bin/sips",
+                &[
+                    "-s",
+                    "format",
+                    "jpeg",
+                    "-Z",
+                    "600",
+                    raw.to_str()?,
+                    "--out",
+                    small.to_str()?,
+                ],
+                Duration::from_secs(5),
+            )
+            .ok()?;
+            image_data_url(&std::fs::read(&small).ok()?)
+        })();
+        let _ = std::fs::remove_file(&raw);
+        let _ = std::fs::remove_file(&small);
+        picture
     }
 
     impl AppleScriptBackend {
@@ -437,7 +578,23 @@ mod runner {
             ) {
                 Ok(output) => {
                     self.last_error = None;
-                    parse_output(&output, &players, Instant::now())
+                    let mut readings = parse_output(&output, &players, Instant::now());
+                    // Music tells no address for its cover art: the picture
+                    // itself comes from a second script, once per song.
+                    for reading in &mut readings {
+                        if let Reading::Snapshot(snapshot) = reading {
+                            if snapshot.player.service != Service::AppleMusic {
+                                continue;
+                            }
+                            if let Some(track) = snapshot.track.as_mut() {
+                                if track.artwork_url.is_none() {
+                                    track.artwork_url =
+                                        self.music_artwork.picture(&track.key, fetch_music_artwork);
+                                }
+                            }
+                        }
+                    }
+                    readings
                 }
                 Err(error) => {
                     self.last_error = Some(format!("osascript: {error}"));
@@ -473,6 +630,78 @@ mod runner {
         fn last_error(&self) -> Option<String> {
             self.last_error.clone()
         }
+    }
+}
+
+#[cfg(test)]
+mod artwork_tests {
+    use std::sync::mpsc;
+
+    use super::ArtworkCache;
+
+    fn answering(picture: Option<&str>) -> mpsc::Receiver<Option<String>> {
+        let (sender, receiver) = mpsc::channel();
+        let _ = sender.send(picture.map(str::to_owned));
+        receiver
+    }
+
+    #[test]
+    fn fetches_a_picture_once_per_song() {
+        let mut cache = ArtworkCache::default();
+        let mut fetches = 0;
+        // The first reading starts the fetch; the next one finds its answer.
+        assert_eq!(
+            cache.picture("a", || {
+                fetches += 1;
+                answering(Some("data:a"))
+            }),
+            None
+        );
+        for _ in 0..3 {
+            let picture = cache.picture("a", || {
+                fetches += 1;
+                answering(Some("never"))
+            });
+            assert_eq!(picture.as_deref(), Some("data:a"));
+        }
+        assert_eq!(fetches, 1);
+        // A new song starts over.
+        assert_eq!(cache.picture("b", || answering(Some("data:b"))), None);
+        assert_eq!(
+            cache.picture("b", || answering(None)).as_deref(),
+            Some("data:b")
+        );
+    }
+
+    #[test]
+    fn tries_a_few_times_while_there_is_no_picture() {
+        let mut cache = ArtworkCache::default();
+        let mut fetches = 0;
+        for _ in 0..10 {
+            let picture = cache.picture("a", || {
+                fetches += 1;
+                answering(None)
+            });
+            assert_eq!(picture, None);
+        }
+        assert_eq!(fetches, 3);
+    }
+
+    #[test]
+    fn waits_for_a_fetch_still_under_way() {
+        let mut cache = ArtworkCache::default();
+        let (sender, receiver) = mpsc::channel();
+        let mut started = Some(receiver);
+        let mut fetches = 0;
+        let mut start = || {
+            fetches += 1;
+            started.take().unwrap_or_else(|| mpsc::channel().1)
+        };
+        assert_eq!(cache.picture("a", &mut start), None);
+        assert_eq!(cache.picture("a", &mut start), None);
+        let _ = sender.send(Some("data:a".into()));
+        assert_eq!(cache.picture("a", &mut start).as_deref(), Some("data:a"));
+        assert_eq!(fetches, 1);
     }
 }
 
