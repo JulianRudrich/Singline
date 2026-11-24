@@ -226,7 +226,7 @@ pub fn find_sung_locally(service: &LyricsService, heard: &[HeardWord], kept: boo
         .collect();
     // The songs with the most words in common first; the sort keeps the most
     // recently heard first among equals.
-    shared.sort_by(|a, b| b.0.cmp(&a.0));
+    shared.sort_by_key(|(common, _)| std::cmp::Reverse(*common));
     let loaded: Vec<Loaded> = shared
         .into_iter()
         .take(ALIGNED_SONGS)
