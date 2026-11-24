@@ -10,6 +10,7 @@ pub mod store;
 use std::sync::{Arc, Mutex, MutexGuard};
 
 use lyrics_core::{lrc, Lyrics, SyncLevel};
+use serde::de::DeserializeOwned;
 use serde::Serialize;
 
 pub use genius::GeniusClient;
@@ -144,14 +145,29 @@ impl LyricsService {
                 let _ = self.store().store_cached(&key, &result, now, expires_at);
                 outcome(result)
             }
-            Err(LookupError::Offline) => LyricsOutcome::Offline,
-            Err(LookupError::RateLimited { retry_after }) => LyricsOutcome::RateLimited {
-                retry_after_secs: retry_after.as_secs().max(1),
-            },
-            Err(error) => LyricsOutcome::Failed {
-                message: error.to_string(),
+            Err(error) => match self.stale::<LookupResult>(&key, options, |result| result) {
+                Some(result) => outcome(result),
+                None => failure(error),
             },
         }
+    }
+
+    /// The answer kept for `key` after its time, for when LRCLIB cannot
+    /// answer: lyrics or "instrumental" still hold. "Not found" does not, as
+    /// the song may have lyrics by now, and a search the listener asked for
+    /// shows why it failed.
+    fn stale<T: DeserializeOwned>(
+        &self,
+        key: &str,
+        options: LookupOptions,
+        result: fn(&T) -> &LookupResult,
+    ) -> Option<T> {
+        if options.refresh {
+            return None;
+        }
+        self.store()
+            .cached_any::<T>(key)
+            .filter(|answer| !matches!(result(answer), LookupResult::NotFound))
     }
 }
 
@@ -192,16 +208,11 @@ impl LyricsService {
                     let _ = self.store().store_cached(&key, &found, now, expires_at);
                     found
                 }
-                Err(LookupError::Offline) => return answer(LyricsOutcome::Offline),
-                Err(LookupError::RateLimited { retry_after }) => {
-                    return answer(LyricsOutcome::RateLimited {
-                        retry_after_secs: retry_after.as_secs().max(1),
-                    })
-                }
                 Err(error) => {
-                    return answer(LyricsOutcome::Failed {
-                        message: error.to_string(),
-                    })
+                    match self.stale::<SongLookup>(&key, options, |found| &found.result) {
+                        Some(found) => found,
+                        None => return answer(failure(error)),
+                    }
                 }
             },
         };
@@ -210,6 +221,18 @@ impl LyricsService {
             duration: found.duration,
             album: found.album,
         }
+    }
+}
+
+fn failure(error: LookupError) -> LyricsOutcome {
+    match error {
+        LookupError::Offline => LyricsOutcome::Offline,
+        LookupError::RateLimited { retry_after } => LyricsOutcome::RateLimited {
+            retry_after_secs: retry_after.as_secs().max(1),
+        },
+        error => LyricsOutcome::Failed {
+            message: error.to_string(),
+        },
     }
 }
 

@@ -42,7 +42,7 @@ For Spotify, Apple Music, Amazon Music and YouTube Music, on Windows, macOS and 
 - **Your music.** Listening time, plays, your daily streak, skips, a listening clock, and your most played songs and artists, from every player, kept only on your device.
 - **Sleep timer and auto-hide.** Pause the music after 15 to 60 minutes or at the end of the song, and let the overlay disappear while nothing plays.
 - **Spotify extras, if you want them.** Connect your own Spotify app to like the current song with ♥, see your top artists and tracks, and use **True Shuffle**: an honest random order through your Liked Songs, playlists and mixes in which nothing repeats until everything has played. Needs Spotify Premium.
-- **Works offline.** Lyrics are cached on your device, so songs you have heard before work without a connection.
+- **Works offline.** Lyrics are cached on your device, so songs you have heard before work without a connection, and Sing to find finds them too.
 - **Private.** No account, no tracking, no analytics. Only the song's title, artist, album and duration leave your computer, to look up lyrics, and you can turn that off. Sing to find sends only the words it heard, never audio.
 - **English and German**, following your system language.
 

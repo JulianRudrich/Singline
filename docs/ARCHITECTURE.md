@@ -80,7 +80,7 @@ The Rust side and the interface share their texts: the tray menu reads the same 
 
 The README lists the folders for each system. `SINGLINE_DATA_DIR` puts all of these into one folder, which the end-to-end tests use. The Spotify refresh token is kept in the system's credential store, not in a file.
 
-Online answers stay in the cache for 30 days, plain lyrics for 3 days, and "not found" for a day, so a song played again needs no connection.
+Online answers stay in the cache for 30 days, plain lyrics for 3 days, and "not found" for a day, so a song played again needs no connection. After that Singline asks LRCLIB again, and while LRCLIB cannot be reached it keeps showing the lyrics found before.
 
 ## Talking to the outside
 

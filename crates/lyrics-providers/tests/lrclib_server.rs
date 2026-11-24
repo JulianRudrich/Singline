@@ -3,10 +3,10 @@
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use lyrics_core::SyncLevel;
+use lyrics_core::{lrc, Lyrics, SyncLevel};
 use lyrics_providers::{
     LookupError, LookupOptions, LookupResult, LrclibClient, LyricsOutcome, LyricsService, Query,
-    Store,
+    SongLookup, Store,
 };
 use serde_json::json;
 use wiremock::matchers::{header, method, path, query_param};
@@ -437,4 +437,75 @@ async fn word_timing_wins_a_tie() {
         panic!("expected lyrics, got {result:?}");
     };
     assert_eq!(lyrics.sync, SyncLevel::Word);
+}
+
+#[tokio::test]
+async fn lyrics_found_earlier_stay_when_lrclib_cannot_answer() {
+    let server = MockServer::start().await;
+    Mock::given(method("GET"))
+        .respond_with(ResponseTemplate::new(500))
+        .mount(&server)
+        .await;
+    let store = Arc::new(Mutex::new(Store::open_in_memory().expect("store opens")));
+    let broken = LyricsService::new(client(&server), Arc::clone(&store));
+    let unreachable = LyricsService::new(
+        LrclibClient::with_base_url("http://127.0.0.1:9", AGENT).with_pause(Duration::ZERO),
+        Arc::clone(&store),
+    );
+    let song = query("Paper Lanterns", None, 200.0);
+    let missing = query("Quiet Rooms", None, 180.0);
+    let kept = |text: &str| LookupResult::Found {
+        lyrics: Lyrics::timed(lrc::parse(text)),
+    };
+    {
+        // Found long ago: the answers are past their time.
+        let store = store.lock().expect("store");
+        store
+            .store_cached(&song.cache_key(), &kept("[00:01.00] Kept"), 1, 2)
+            .expect("cached");
+        store
+            .store_cached(&missing.cache_key(), &LookupResult::NotFound, 1, 2)
+            .expect("cached");
+        let sung = SongLookup {
+            result: kept("[00:01.00] Sung"),
+            duration: Some(200.0),
+            album: None,
+        };
+        let key = format!("lrclib-song:{}\u{1f}{}", "paper lanterns", "example artist");
+        store.store_cached(&key, &sung, 1, 2).expect("cached");
+    }
+    let shows = |outcome: &LyricsOutcome, line: &str| matches!(outcome, LyricsOutcome::Online { lyrics } if lyrics.lines[0].text == line);
+
+    for service in [&unreachable, &broken] {
+        let found = service
+            .lyrics_for("track:a", &song, LookupOptions::default())
+            .await;
+        assert!(shows(&found, "Kept"), "{found:?}");
+        let sung = service
+            .song_lyrics(
+                "track:s",
+                "Paper Lanterns",
+                "Example Artist",
+                LookupOptions::default(),
+            )
+            .await;
+        assert!(shows(&sung.outcome, "Sung"), "{:?}", sung.outcome);
+        assert_eq!(sung.duration, Some(200.0));
+    }
+    // The song may have lyrics by now, so "not found" makes way for the reason.
+    assert_eq!(
+        unreachable
+            .lyrics_for("track:b", &missing, LookupOptions::default())
+            .await,
+        LyricsOutcome::Offline
+    );
+    // Search again shows that the search failed.
+    let again = LookupOptions {
+        online: true,
+        refresh: true,
+    };
+    assert_eq!(
+        unreachable.lyrics_for("track:a", &song, again).await,
+        LyricsOutcome::Offline
+    );
 }
