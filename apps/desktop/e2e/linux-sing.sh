@@ -6,6 +6,11 @@
 # line the overlay shows with where the singing really was, and saves
 # screenshots of the listening and the found state.
 #
+# A second round sings the same lines offline: Singline quits as at logout,
+# starts again without a Genius token, with Genius and LRCLIB out of reach,
+# and has to find the song among the songs heard in the first round, on the
+# device.
+#
 # The recording is synthesized with espeak-ng (sudo apt install espeak-ng):
 # line k starts 1 + 4k seconds into the file, so the first sung line ("I can
 # hear the morning…", at 12 s in the song) is heard 1 s after listening
@@ -52,41 +57,72 @@ export SINGLINE_DATA_DIR="$OUT/data" SINGLINE_LRCLIB_URL="http://127.0.0.1:$PORT
 export SINGLINE_GENIUS_URL="http://127.0.0.1:$GENIUS_PORT" SINGLINE_MIC_FILE="$OUT/sung.wav" SINGLINE_WHISPER_MODEL="$MODEL"
 export APP OUT PORT GENIUS_PORT HERE
 
-timeout 150 dbus-run-session -- xvfb-run -a -s "-screen 0 1280x800x24" bash -c '
+timeout 240 dbus-run-session -- xvfb-run -a -s "-screen 0 1280x800x24" bash -c '
   set -u
   xsetroot -solid "#3b5a73" 2>/dev/null || true
-  python3 "$HERE/mock_lrclib.py" "$PORT" 2> "$OUT/lrclib.log" &
-  python3 "$HERE/mock_genius.py" "$GENIUS_PORT" 2> "$OUT/genius.log" &
-  sleep 1
-  # Every line the app prints, with the wall-clock time it arrived.
-  "$APP" 2>&1 | python3 -u -c "
+  # Starts the app as $app. Every line it prints goes to the file $1, with
+  # the wall-clock time it arrived.
+  start_app() {
+    "$APP" > >(python3 -u -c "
 import sys, time
 for line in sys.stdin:
     print(f\"{time.time():.3f} {line}\", end=\"\", flush=True)
-" > "$OUT/app.log" &
-  for _ in $(seq 120); do
-    grep -q "sing: listening" "$OUT/app.log" 2>/dev/null && break
-    sleep 0.25
-  done
+" > "$1") 2>&1 &
+    app=$!
+  }
+  # Waits until the file $2 holds $1, for $3 quarter seconds at most.
+  wait_for() {
+    for _ in $(seq "$3"); do
+      grep -q "$1" "$2" 2>/dev/null && return 0
+      sleep 0.25
+    done
+    return 1
+  }
+  # Quits as the system does at logout, and waits until the app is gone.
+  quit_app() {
+    kill -TERM "$app" 2>/dev/null
+    for _ in $(seq 40); do
+      kill -0 "$app" 2>/dev/null || return 0
+      sleep 0.25
+    done
+    kill -KILL "$app" 2>/dev/null
+  }
+
+  python3 "$HERE/mock_lrclib.py" "$PORT" 2> "$OUT/lrclib.log" &
+  lrclib=$!
+  python3 "$HERE/mock_genius.py" "$GENIUS_PORT" 2> "$OUT/genius.log" &
+  genius=$!
+  sleep 1
+  start_app "$OUT/app.log"
+  wait_for "sing: listening" "$OUT/app.log" 120
   sleep 2.5
   import -window root "$OUT/listening.png" || true
-  for _ in $(seq 160); do
-    grep -q "sing: found" "$OUT/app.log" 2>/dev/null && break
-    sleep 0.25
-  done
+  wait_for "sing: found" "$OUT/app.log" 160
   sleep 2
   import -window root "$OUT/found.png" || true
   sleep 16
-  pkill -f "$APP" 2>/dev/null; sleep 0.5
+  quit_app
+  kill "$lrclib" "$genius" 2>/dev/null
+  wait "$lrclib" "$genius" 2>/dev/null
+
+  # Offline: no token, and LRCLIB is out of reach. Genius is there only to
+  # count, and must not be asked.
+  rm -f "$SINGLINE_DATA_DIR/sing.json"
+  export SINGLINE_LRCLIB_URL="http://127.0.0.1:9"
+  python3 "$HERE/mock_genius.py" "$GENIUS_PORT" 2> "$OUT/genius-offline.log" &
+  sleep 1
+  start_app "$OUT/app-offline.log"
+  wait_for "sing: found" "$OUT/app-offline.log" 200
+  sleep 10
+  quit_app
   kill $(jobs -p) 2>/dev/null || true
 ' 2>&1 | grep -v "fd limit" || true
 
 python3 - "$OUT" <<'PY'
-import json, pathlib, re, sys
+import json, pathlib, re, sqlite3, sys
 
 out = pathlib.Path(sys.argv[1])
 failures = []
-log = (out / "app.log").read_text()
 
 # The song as the pretend LRCLIB has it: a line every four seconds.
 harbor = [
@@ -102,56 +138,93 @@ def line_at(position):
 
 # The first sung line is at 12 s in the song and 1 s into the recording.
 OFFSET = 11.0
-started = re.search(r"^([0-9.]+) sing: listening to the file", log, re.M)
-found = re.search(r'^([0-9.]+) sing: found "([^"]+)" by "([^"]+)"', log, re.M)
-if not started:
-    failures.append("Sing to find never started listening")
-if not found:
-    failures.append("Sing to find found no song")
-elif (found.group(2), found.group(3)) != ("Morning Harbor", "Example Artist"):
-    failures.append(f"found {found.group(2)!r} by {found.group(3)!r} instead of the sung song")
 
-genius = [json.loads(line) for line in (out / "genius.log").read_text().splitlines() if line.startswith("{")]
+def read(name):
+    path = out / name
+    return path.read_text() if path.exists() else ""
+
+def requests(name):
+    return [json.loads(line) for line in read(name).splitlines() if line.startswith("{")]
+
+def check_round(name, log):
+    """Sing to find found the sung song, the overlay followed the singing and the app quit cleanly."""
+    problems = []
+    started = re.search(r"^([0-9.]+) sing: listening to the file", log, re.M)
+    found = re.search(r'^([0-9.]+) sing: found "([^"]+)" by "([^"]+)"', log, re.M)
+    if not started:
+        problems.append("Sing to find never started listening")
+    if not found:
+        problems.append("Sing to find found no song")
+    elif (found.group(2), found.group(3)) != ("Morning Harbor", "Example Artist"):
+        problems.append(f"found {found.group(2)!r} by {found.group(3)!r} instead of the sung song")
+    if "SIGTERM: quitting" not in log:
+        problems.append("the app did not quit cleanly on SIGTERM")
+    errors = []
+    reports = [(float(at), float(position), text) for at, position, text in re.findall(r"^([0-9.]+) overlay-line (-?[0-9.]+) (.*)$", log, re.M)]
+    if len(reports) < 3:
+        problems.append(f"the overlay showed {len(reports)} line(s); expected at least 3")
+    for at, position, text in reports:
+        # The overlay shows a long line in two halves.
+        expected = line_at(position + 0.05)
+        if text not in expected or (text == "") != (expected == ""):
+            problems.append(f"at {position} s the overlay showed {text!r}, expected {expected!r}")
+        if started:
+            sung = OFFSET + at - float(started.group(1))
+            errors.append(position - sung)
+            if abs(position - sung) > 1.5:
+                problems.append(f"the overlay was at {position:.2f} s while the singing was at {sung:.2f} s")
+    print(f"{name}: overlay lines: {len(reports)}")
+    for text in re.findall(r"^[0-9.]+ sing: heard (\".*\")", log, re.M)[:6]:
+        print(f"  heard {text}")
+    if found:
+        print(f"  found {found.group(2)} by {found.group(3)} {float(found.group(1)) - float(started.group(1)) if started else 0:.1f} s after listening started")
+    for (at, position, text), error in zip(reports, errors):
+        print(f"  {position:7.2f} s  {error:+.2f} s  {text}")
+    if errors:
+        print(f"  timing error: mean {sum(abs(e) for e in errors) / len(errors):.2f} s, largest {max(abs(e) for e in errors):.2f} s")
+    failures.extend(f"{name}: {problem}" for problem in problems)
+
+# Round 1: Genius names the candidates, LRCLIB has their lyrics.
+log = read("app.log")
+check_round("online", log)
+genius = requests("genius.log")
 if not genius:
-    failures.append("the app never asked Genius")
+    failures.append("online: the app never asked Genius")
 for request in genius:
     if request["authorization"] != "Bearer e2e-token":
-        failures.append(f"Genius was asked without the token: {request['authorization']!r}")
+        failures.append(f"online: Genius was asked without the token: {request['authorization']!r}")
     if set(request["query"]) != {"q"}:
-        failures.append(f"Genius got more than the words: {request['query']}")
-lrclib = [json.loads(line) for line in (out / "lrclib.log").read_text().splitlines() if line.startswith("{")]
+        failures.append(f"online: Genius got more than the words: {request['query']}")
+lrclib = requests("lrclib.log")
 asked = {r["query"].get("track_name") for r in lrclib if r["path"] == "/api/search"}
 if not {"City Morning", "Morning Harbor"} <= asked:
-    failures.append(f"LRCLIB was not asked for both candidates: {sorted(asked)}")
+    failures.append(f"online: LRCLIB was not asked for both candidates: {sorted(asked)}")
+print(f"  Genius requests: {len(genius)}, LRCLIB requests: {len(lrclib)}")
 
-errors = []
-reports = [(float(at), float(position), text) for at, position, text in re.findall(r"^([0-9.]+) overlay-line (-?[0-9.]+) (.*)$", log, re.M)]
-if len(reports) < 3:
-    failures.append(f"the overlay showed {len(reports)} line(s); expected at least 3")
-for at, position, text in reports:
-    # The overlay shows a long line in two halves.
-    expected = line_at(position + 0.05)
-    if text not in expected or (text == "") != (expected == ""):
-        failures.append(f"at {position} s the overlay showed {text!r}, expected {expected!r}")
-    if started:
-        sung = OFFSET + at - float(started.group(1))
-        errors.append(position - sung)
-        if abs(position - sung) > 1.5:
-            failures.append(f"the overlay was at {position:.2f} s while the singing was at {sung:.2f} s")
+# Round 2: no token and nothing to reach, so the song must come from the
+# songs heard in round 1.
+offline = read("app-offline.log")
+check_round("offline", offline)
+if "of the songs you heard fit" not in offline:
+    failures.append("offline: the songs heard before were not searched")
+asked = requests("genius-offline.log")
+if asked:
+    failures.append(f"offline: Genius was asked {len(asked)} time(s) for a song heard before")
 
-heard = re.findall(r"^[0-9.]+ sing: heard (\".*\")", log, re.M)
-print(f"Genius requests: {len(genius)}, LRCLIB requests: {len(lrclib)}, overlay lines: {len(reports)}")
-for text in heard[:6]:
-    print(f"  heard {text}")
-if found:
-    print(f"  found {found.group(2)} by {found.group(3)} {float(found.group(1)) - float(started.group(1)) if started else 0:.1f} s after listening started")
-for (at, position, text), error in zip(reports, errors):
-    print(f"  {position:7.2f} s  {error:+.2f} s  {text}")
-if errors:
-    print(f"timing error: mean {sum(abs(e) for e in errors) / len(errors):.2f} s, largest {max(abs(e) for e in errors):.2f} s")
+# Each round's song went into the listening history when the app quit.
+database = out / "data" / "singline.sqlite"
+listens = []
+if database.exists():
+    with sqlite3.connect(database) as connection:
+        listens = connection.execute("SELECT title, artist, service FROM listens").fetchall()
+sung = [listen for listen in listens if listen == ("Morning Harbor", "Example Artist", "microphone")]
+if len(sung) < 2:
+    failures.append(f"the listening history holds {len(sung)} sung song(s), expected one for each round: {listens}")
+
 if failures:
     print("FAILED:\n  " + "\n  ".join(failures))
-    print("--- app.log ---\n" + log[-4000:])
+    print("--- app.log ---\n" + log[-3000:])
+    print("--- app-offline.log ---\n" + offline[-3000:])
     sys.exit(1)
-print(f"OK: Sing to find found the song and followed the singing. Screenshots: {out / 'listening.png'}, {out / 'found.png'}")
+print(f"OK: Sing to find found the song online and offline and followed the singing. Screenshots: {out / 'listening.png'}, {out / 'found.png'}")
 PY

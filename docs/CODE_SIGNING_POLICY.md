@@ -44,7 +44,7 @@ Test builds of `main` are not signed with this certificate.
 Singline only connects to other computers to do what it is used for, and says so in the [README](../README.md#privacy):
 
 - **LRCLIB** receives the title, artist, album and duration of the song playing, to find its lyrics. This can be turned off.
-- **Genius** receives the words recognised while you use Sing to find, to find the song.
+- **Genius** receives the words recognised while you use Sing to find, to find the song, when none of the songs you heard fits.
 - **Hugging Face** serves the speech model for Sing to find, once, when you first use it.
 - **GitHub** is asked whether a newer version exists. This can be turned off.
 - **Spotify** is reached only after you connect your own Spotify app.

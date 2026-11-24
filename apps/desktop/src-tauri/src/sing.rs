@@ -19,7 +19,8 @@ use std::time::{Duration, Instant};
 use lyrics_core::alignment::{self, FollowStep, Follower, HeardWord, SongWord};
 use lyrics_core::Lyrics;
 use lyrics_providers::{
-    find_sung, GeniusClient, LookupOptions, LyricsOutcome, SearchError, SungMatch,
+    find_sung, find_sung_locally, GeniusClient, LookupOptions, LyricsOutcome, SearchError,
+    SungMatch,
 };
 use media_session::{normalize, MicrophoneFeed, Track};
 use serde::{Deserialize, Serialize};
@@ -420,10 +421,14 @@ pub fn start(app: &AppHandle) {
     if !transcription::processor_supported() {
         return fail(app, SingProblem::Processor);
     }
-    if !state.settings().lookup_online {
+    // Songs you heard are found on the device; any other song needs Genius,
+    // and so online lookups and a token.
+    let online = state.settings().lookup_online;
+    let known = state.lyrics.knows_songs(online);
+    if !online && !known {
         return fail(app, SingProblem::OnlineOff);
     }
-    if sing.token().is_empty() {
+    if sing.token().is_empty() && !known {
         return fail(app, SingProblem::NoToken);
     }
     // The overlay comes back into view, also when auto-hide hid it.
@@ -768,24 +773,41 @@ impl Listening {
 
         let app = self.app.clone();
         let sing = app.state::<Sing>();
-        let search = GeniusClient::with_base_url(&sing.genius_url, &sing.token(), &sing.user_agent);
         let service = app.state::<AppState>().lyrics.clone();
         let options = LookupOptions {
             online: app.state::<AppState>().settings().lookup_online,
             refresh: false,
         };
-        let found = tauri::async_runtime::block_on(find_sung(
-            &search,
-            &service,
-            &text,
-            &heard,
-            CANDIDATES,
-            options,
-            |title, artist| normalize::track_key(title, artist, None),
-        ));
-        let found = match found {
-            Ok(found) => found,
-            Err(error) => return Err(search_problem(error)),
+        // The songs you heard come first, found on the device. Genius is asked
+        // only when none of them fits, and only with online lookups on.
+        let local = find_sung_locally(&service, &heard, options.online);
+        let fits = local
+            .matches
+            .iter()
+            .find(|found| !self.rejects(found))
+            .is_some_and(|found| found.alignment.is_confident());
+        let found = if fits || !options.online {
+            sing.log(|| format!("{} of the songs you heard fit", local.matches.len()));
+            local
+        } else {
+            let search =
+                GeniusClient::with_base_url(&sing.genius_url, &sing.token(), &sing.user_agent);
+            let found = tauri::async_runtime::block_on(find_sung(
+                &search,
+                &service,
+                &text,
+                &heard,
+                CANDIDATES,
+                options,
+                |title, artist| normalize::track_key(title, artist, None),
+            ));
+            match found {
+                Ok(found) => found,
+                // Without Genius, as offline or without a token, the songs you
+                // heard may still fit once more has been sung.
+                Err(_) if !local.matches.is_empty() => local,
+                Err(error) => return Err(search_problem(error)),
+            }
         };
         sing.log(|| {
             format!(
@@ -805,17 +827,10 @@ impl Listening {
                     .join(", ")
             )
         });
-        let rejected = &self.rejected;
         self.candidates = found
             .matches
             .into_iter()
-            .filter(|found| {
-                !rejected.contains(&normalize::track_key(
-                    &found.candidate.title,
-                    &found.candidate.artist,
-                    None,
-                ))
-            })
+            .filter(|found| !self.rejects(found))
             .filter(|found| found.alignment.matched >= 2)
             .map(|found| Candidate {
                 words: alignment::song_words(&found.lyrics.lines),
@@ -836,6 +851,15 @@ impl Listening {
             }
         }
         self.maybe_give_up(voiced, &text)
+    }
+
+    /// Whether the listener said "Not this song" to `found` before.
+    fn rejects(&self, found: &SungMatch) -> bool {
+        self.rejected.contains(&normalize::track_key(
+            &found.candidate.title,
+            &found.candidate.artist,
+            None,
+        ))
     }
 
     fn maybe_give_up(&mut self, voiced: f64, heard: &str) -> Result<(), SingProblem> {

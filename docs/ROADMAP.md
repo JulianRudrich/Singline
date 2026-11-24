@@ -59,7 +59,7 @@ The first release follows this milestone. Singline already replaces the native m
 
 - [x] Recognise a song from a few sung words: Whisper on the device, Genius for the words, LRCLIB for the lyrics
 - [x] Start at the sung line and follow the singer
-- [ ] Find songs among your own and cached lyrics without Genius, also offline
+- [x] Find songs you heard among your own and kept lyrics, without Genius and offline
 - [ ] A smaller or larger speech model to choose, and the Metal and GPU builds of whisper.cpp
 
 ### More

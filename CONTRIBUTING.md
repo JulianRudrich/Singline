@@ -125,7 +125,7 @@ bash apps/desktop/e2e/linux-youtube.sh
 bash apps/desktop/e2e/linux-sing.sh
 ```
 
-The test for Sing to find plays lines synthesized with espeak-ng instead of the microphone and needs a Whisper model; the top of [`linux-sing.sh`](apps/desktop/e2e/linux-sing.sh) says how to get one, and without it the test is skipped. Screenshots and logs end up in `target/e2e`, `target/e2e-youtube` and `target/e2e-sing`.
+The test for Sing to find plays lines synthesized with espeak-ng instead of the microphone, twice: first with the simulated Genius and LRCLIB, then offline without a token, where the song has to come from the listening history. It needs a Whisper model; the top of [`linux-sing.sh`](apps/desktop/e2e/linux-sing.sh) says how to get one, and without it the test is skipped. Screenshots and logs end up in `target/e2e`, `target/e2e-youtube` and `target/e2e-sing`.
 
 ### Lint
 

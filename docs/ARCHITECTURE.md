@@ -63,7 +63,7 @@ The Rust side and the interface share their texts: the tray menu reads the same 
 
 ## Sing to find
 
-[`sing.rs`](../apps/desktop/src-tauri/src/sing.rs) runs a session on its own thread. The microphone feeds a recording (`transcription::capture` and `audio`), voice detection (`vad`) finds stretches of singing, and Whisper turns them into words with a time for each word. Genius turns the words into candidate songs, the usual lookup loads their lyrics, and [`lyrics_core::alignment`](../crates/lyrics-core/src/alignment.rs) decides which song it is and where in it the singer stands. The song then plays through the microphone player, so the overlay follows it like any other player. Only the words go to Genius; the audio stays in memory.
+[`sing.rs`](../apps/desktop/src-tauri/src/sing.rs) runs a session on its own thread. The microphone feeds a recording (`transcription::capture` and `audio`), voice detection (`vad`) finds stretches of singing, and Whisper turns them into words with a time for each word. The songs of the listening history come first: [`search.rs`](../crates/lyrics-providers/src/search.rs) compares the words with the lyrics the store keeps for them, on the device. Only when none fits, Genius turns the words into candidate songs and the usual lookup loads their lyrics. Either way, [`lyrics_core::alignment`](../crates/lyrics-core/src/alignment.rs) decides which song it is and where in it the singer stands. The song then plays through the microphone player, so the overlay follows it like any other player. Only the words go to Genius; the audio stays in memory.
 
 ## Where data lives
 
@@ -87,7 +87,7 @@ Online answers stay in the cache for 30 days, plain lyrics for 3 days, and "not 
 | Service | When | What it gets |
 |---|---|---|
 | LRCLIB | For each new song, unless **Search lyrics online** is off | Title, artist, album and duration |
-| Genius | During Sing to find | The words Whisper heard |
+| Genius | During Sing to find, when no song you heard fits | The words Whisper heard |
 | Hugging Face | Once, the first time Sing to find is used | A download of the speech model, checked against its SHA-256 checksum |
 | Spotify | Only after you connect it | What the Web API calls need |
 

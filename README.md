@@ -208,7 +208,7 @@ sudo ln -sf /Applications/Singline.app/Contents/MacOS/singline /usr/local/bin/si
 
 How often word timing is available varies by song. In a sample of ten popular songs on LRCLIB, eight had at least one version with word timing.
 
-For **Sing to find**, Whisper first turns your singing into words on your computer. [Genius](https://genius.com) finds the songs those words belong to, since LRCLIB cannot search lyrics. Singline then loads the lyrics of the best candidates the usual way (your own lyrics, the cache, LRCLIB), picks the song whose lyrics match what you sang, and starts at the line you sang. While you keep singing, it listens again every few seconds and keeps the lyrics with you. Songs that LRCLIB has only without timing cannot be followed.
+For **Sing to find**, Whisper first turns your singing into words on your computer. Singline compares them with the lyrics of the songs in your listening history first, on your device, so a song you heard before is found without internet and without a Genius token. For any other song, [Genius](https://genius.com) finds the songs those words belong to, since LRCLIB cannot search lyrics. Singline then loads the lyrics of the best candidates the usual way (your own lyrics, the cache, LRCLIB), picks the song whose lyrics match what you sang, and starts at the line you sang. While you keep singing, it listens again every few seconds and keeps the lyrics with you. Songs that LRCLIB has only without timing cannot be followed.
 
 ## Privacy
 
@@ -216,7 +216,7 @@ For **Sing to find**, Whisper first turns your singing into words on your comput
 - To find lyrics, Singline sends the title, artist, album and duration of the song you are playing to LRCLIB. Turn off **Search lyrics online** in Settings → Song & timing to keep everything on your device.
 - The browser extension talks only to Singline on your own computer (`127.0.0.1`), and only after you paired it. Web pages and other programs without the pairing are refused.
 - Your listening history never leaves your device. Turn it off or clear it at the bottom of the **Your music** window; cleared entries are overwritten on disk.
-- Sing to find runs only while you use it. The audio stays in memory on your computer and is transcribed there by [Whisper](https://github.com/ggerganov/whisper.cpp); the speech model (about 150 MB) is downloaded once from Hugging Face into the data folder. Only the words it heard go to Genius, to find the song, and the found title and artist to LRCLIB. It needs **Search lyrics online**.
+- Sing to find runs only while you use it. The audio stays in memory on your computer and is transcribed there by [Whisper](https://github.com/ggerganov/whisper.cpp); the speech model (about 150 MB) is downloaded once from Hugging Face into the data folder. It looks among the songs you heard first, on your device. Only when none of them fits do the words it heard go to Genius, to find the song, and the found title and artist to LRCLIB. With **Search lyrics online** off, it finds only songs with lyrics of your own.
 - The Spotify connection is optional. It uses your own Spotify app, keeps the login in the system's credential store (Keychain, Credential Manager or Secret Service), and talks to Spotify only while you are connected.
 - The log file stays on your device and is only sent when you submit an issue from **Report a problem** yourself.
 - Your settings are stored in `settings.json`. The cache, your timing corrections, your own lyrics and your listening history are stored in `singline.sqlite`. Deleting these files resets Singline.
@@ -251,7 +251,7 @@ xattr -dr com.apple.quarantine /Applications/Singline.app
 
 **Sing to find cannot hear you.** Allow Singline to use the microphone: on macOS under **System Settings → Privacy & Security → Microphone**, on Windows under **Settings → Privacy & security → Microphone → Let desktop apps access your microphone**. On Linux, check that the microphone is the chosen input and not muted. Singline says which of these it is.
 
-**Sing to find needs a Genius token.** Builds from source have none. Create a free API client at [genius.com/api-clients](https://genius.com/api-clients), generate an access token and paste the **Client Access Token** in Settings → General → **Sing to find**.
+**Sing to find needs a Genius token.** Builds from source have none, so they find only songs you heard before. To find any song, create a free API client at [genius.com/api-clients](https://genius.com/api-clients), generate an access token and paste the **Client Access Token** in Settings → General → **Sing to find**.
 
 **Sing to find says the processor is too old.** Its speech recognition needs a processor with AVX2, as Intel Core processors have since 2013, AMD processors since 2015 and every Mac with Apple silicon. Many Celeron, Pentium and Atom processors lack it. Everything else in Singline works without it.
 
