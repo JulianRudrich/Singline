@@ -5,16 +5,19 @@
 //! [`crate::genius::GeniusClient`]. [`find_sung`] loads every candidate's
 //! lyrics and ranks the candidates by how well they explain what was heard.
 
+use std::collections::HashSet;
 use std::future::Future;
 use std::pin::Pin;
 use std::time::Duration;
 
 use lyrics_core::alignment::{self, Alignment, HeardWord};
+use lyrics_core::listening::ListenSession;
 use lyrics_core::{Lyrics, SyncLevel};
 use serde::Serialize;
 use thiserror::Error;
 
-use crate::{LookupOptions, LyricsOutcome, LyricsService};
+use crate::lrclib::{LookupResult, Query, SongLookup};
+use crate::{song_cache_key, LookupOptions, LyricsOutcome, LyricsService};
 
 /// A song a search provider found for some words of its lyrics.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize)]
@@ -116,29 +119,147 @@ pub async fn find_sung(
         if lyrics.sync == SyncLevel::Unsynced || lyrics.instrumental {
             continue;
         }
-        loaded.push((candidate, lyrics, own, found.duration, found.album));
+        loaded.push(Loaded {
+            candidate,
+            lyrics,
+            own,
+            duration: found.duration,
+            album: found.album,
+        });
     }
+    Ok(SungSearch {
+        matches: ranked(heard, loaded),
+        candidates: suggested,
+        lookup_problem,
+    })
+}
+
+/// A song with synced lyrics, ready to be ranked.
+struct Loaded {
+    candidate: SongCandidate,
+    lyrics: Lyrics,
+    own: bool,
+    duration: Option<f64>,
+    album: Option<String>,
+}
+
+/// `loaded` ranked by how well each song explains `heard`, the best first.
+fn ranked(heard: &[HeardWord], loaded: Vec<Loaded>) -> Vec<SungMatch> {
     let words: Vec<_> = loaded
         .iter()
-        .map(|(_, lyrics, ..)| alignment::song_words(&lyrics.lines))
+        .map(|song| alignment::song_words(&song.lyrics.lines))
         .collect();
     let mut matches = Vec::new();
-    let mut entries: Vec<Option<_>> = loaded.into_iter().map(Some).collect();
+    let mut entries: Vec<Option<Loaded>> = loaded.into_iter().map(Some).collect();
     for (index, alignment) in alignment::rank(heard, &words) {
-        if let Some((candidate, lyrics, own, duration, album)) = entries[index].take() {
+        if let Some(song) = entries[index].take() {
             matches.push(SungMatch {
-                candidate,
-                lyrics,
-                own,
-                duration,
-                album,
+                candidate: song.candidate,
+                lyrics: song.lyrics,
+                own: song.own,
+                duration: song.duration,
+                album: song.album,
                 alignment,
             });
         }
     }
-    Ok(SungSearch {
-        matches,
-        candidates: suggested,
-        lookup_problem,
-    })
+    matches
+}
+
+/// At most this many songs from the history are looked at, the most
+/// recently heard first.
+const HEARD_SONGS: usize = 2000;
+/// Of those, the ones sharing the most words with what was heard are aligned.
+const ALIGNED_SONGS: usize = 40;
+
+/// Finds the sung song on this device, without asking anyone: among the songs
+/// you heard, in your own lyrics and, with `kept`, in the lyrics Singline
+/// keeps from LRCLIB, also when they are out of date. Only songs with synced
+/// lyrics count, ranked like [`find_sung`] ranks the songs of a search.
+pub fn find_sung_locally(service: &LyricsService, heard: &[HeardWord], kept: bool) -> SungSearch {
+    let listens = service.store().listens(None).unwrap_or_default();
+    let mut seen = HashSet::new();
+    let songs: Vec<&ListenSession> = listens
+        .iter()
+        .rev()
+        .filter(|listen| seen.insert(listen.track_key.as_str()))
+        .take(HEARD_SONGS)
+        .collect();
+    let sung: HashSet<String> = heard
+        .iter()
+        .flat_map(|word| alignment::words(&word.text))
+        .collect();
+    let mut shared: Vec<(usize, Loaded)> = songs
+        .into_iter()
+        .filter_map(|song| {
+            let (lyrics, own) = match service.local(&song.track_key) {
+                Some(lyrics) => (lyrics, true),
+                None if kept => (kept_lyrics(service, song)?, false),
+                None => return None,
+            };
+            if lyrics.sync == SyncLevel::Unsynced || lyrics.instrumental {
+                return None;
+            }
+            let words: HashSet<String> = lyrics
+                .lines
+                .iter()
+                .flat_map(|line| alignment::words(&line.text))
+                .collect();
+            let common = sung.intersection(&words).count();
+            (common >= 2).then(|| {
+                (
+                    common,
+                    Loaded {
+                        candidate: SongCandidate {
+                            title: song.title.clone(),
+                            artist: song.artist.clone(),
+                            artwork_url: None,
+                        },
+                        lyrics,
+                        own,
+                        duration: song.duration,
+                        album: song.album.clone(),
+                    },
+                )
+            })
+        })
+        .collect();
+    // The songs with the most words in common first; the sort keeps the most
+    // recently heard first among equals.
+    shared.sort_by(|a, b| b.0.cmp(&a.0));
+    let loaded: Vec<Loaded> = shared
+        .into_iter()
+        .take(ALIGNED_SONGS)
+        .map(|(_, song)| song)
+        .collect();
+    let candidates = loaded.len();
+    SungSearch {
+        matches: ranked(heard, loaded),
+        candidates,
+        lookup_problem: None,
+    }
+}
+
+/// The lyrics Singline keeps from LRCLIB for a song you heard: from the
+/// lookup while it played, or from an earlier Sing to find.
+fn kept_lyrics(service: &LyricsService, song: &ListenSession) -> Option<Lyrics> {
+    let store = service.store();
+    let played = song.duration.and_then(|duration| {
+        let query = Query {
+            title: song.title.clone(),
+            artist: song.artist.clone(),
+            album: song.album.clone(),
+            duration,
+        };
+        store.cached_any::<LookupResult>(&query.cache_key())
+    });
+    let result = played.or_else(|| {
+        store
+            .cached_any::<SongLookup>(&song_cache_key(&song.title, &song.artist))
+            .map(|found| found.result)
+    })?;
+    match result {
+        LookupResult::Found { lyrics } => Some(lyrics),
+        LookupResult::Instrumental | LookupResult::NotFound => None,
+    }
 }

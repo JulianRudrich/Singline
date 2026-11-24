@@ -14,7 +14,9 @@ use serde::Serialize;
 
 pub use genius::GeniusClient;
 pub use lrclib::{LookupError, LookupResult, LrclibClient, Query, SongLookup};
-pub use search::{find_sung, SearchError, SongCandidate, SongSearch, SungMatch, SungSearch};
+pub use search::{
+    find_sung, find_sung_locally, SearchError, SongCandidate, SongSearch, SungMatch, SungSearch,
+};
 pub use store::{ImportError, Store, StoreError, MAX_LYRICS_BYTES};
 
 const DAY: i64 = 24 * 60 * 60;
@@ -97,6 +99,14 @@ impl LyricsService {
             .unwrap_or_else(|poisoned| poisoned.into_inner())
     }
 
+    /// Whether Sing to find can look for songs on this device: among your own
+    /// lyrics, and with `kept` among the songs you heard whose lyrics Singline
+    /// keeps from LRCLIB.
+    pub fn knows_songs(&self, kept: bool) -> bool {
+        let store = self.store();
+        store.has_local_lyrics() || (kept && store.listen_count() > 0)
+    }
+
     /// Your own lyrics for the track, when it has some with timed text.
     pub fn local(&self, track_key: &str) -> Option<Lyrics> {
         let text = self.store().local_lyrics(track_key)?;
@@ -167,11 +177,7 @@ impl LyricsService {
         if !options.online {
             return answer(LyricsOutcome::LocalOnly);
         }
-        let key = format!(
-            "lrclib-song:{}\u{1f}{}",
-            lyrics_core::matching::normalized(title),
-            lyrics_core::matching::normalized(artist)
-        );
+        let key = song_cache_key(title, artist);
         let now = store::unix_now();
         let cached = if options.refresh {
             None
@@ -223,4 +229,13 @@ fn lifetime(result: &LookupResult) -> i64 {
         LookupResult::Found { .. } | LookupResult::Instrumental => 30 * DAY,
         LookupResult::NotFound => DAY,
     }
+}
+
+/// The cache key of a song looked up by its title and artist alone.
+pub(crate) fn song_cache_key(title: &str, artist: &str) -> String {
+    format!(
+        "lrclib-song:{}\u{1f}{}",
+        lyrics_core::matching::normalized(title),
+        lyrics_core::matching::normalized(artist)
+    )
 }

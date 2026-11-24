@@ -212,6 +212,22 @@ impl Store {
         serde_json::from_str(&json).ok()
     }
 
+    /// A cached result, also one that is out of date: an old answer still
+    /// holds the song's lyrics, as Sing to find needs without a connection.
+    pub fn cached_any<T: DeserializeOwned>(&self, query_key: &str) -> Option<T> {
+        let json: String = self
+            .connection
+            .query_row(
+                "SELECT result FROM lyrics_cache WHERE query_key = ?1",
+                params![query_key],
+                |row| row.get(0),
+            )
+            .optional()
+            .ok()
+            .flatten()?;
+        serde_json::from_str(&json).ok()
+    }
+
     /// Caches an online result until `expires_at` and trims the cache to its capacity.
     pub fn store_cached<T: Serialize>(
         &self,
@@ -318,6 +334,15 @@ impl Store {
             .connection
             .query_row("PRAGMA wal_checkpoint(TRUNCATE)", [], |_| Ok(()));
         Ok(())
+    }
+
+    /// Whether you have any lyrics of your own.
+    pub fn has_local_lyrics(&self) -> bool {
+        self.connection
+            .query_row("SELECT EXISTS (SELECT 1 FROM local_lyrics)", [], |row| {
+                row.get::<_, bool>(0)
+            })
+            .unwrap_or(false)
     }
 
     pub fn listen_count(&self) -> usize {
