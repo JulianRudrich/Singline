@@ -164,10 +164,11 @@ def check_round(name, log):
     if len(reports) < 3:
         problems.append(f"the overlay showed {len(reports)} line(s); expected at least 3")
     for at, position, text in reports:
-        # The overlay shows a long line in two halves.
-        expected = line_at(position + 0.05)
-        if text not in expected or (text == "") != (expected == ""):
-            problems.append(f"at {position} s the overlay showed {text!r}, expected {expected!r}")
+        # The overlay shows a long line in two halves, and may move on to the
+        # next line a moment early.
+        expected = [line_at(position), line_at(position + 0.05)]
+        if not any(text in line and (text == "") == (line == "") for line in expected):
+            problems.append(f"at {position} s the overlay showed {text!r}, expected {expected[0]!r}")
         if started:
             sung = OFFSET + at - float(started.group(1))
             errors.append(position - sung)
