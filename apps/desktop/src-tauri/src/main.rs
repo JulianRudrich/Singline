@@ -308,6 +308,10 @@ fn setup(app: &mut tauri::App, demo: bool) -> Result<(), Box<dyn std::error::Err
         }
     }
 
+    #[cfg(unix)]
+    if let Err(error) = quit_on_signals(&handle) {
+        log::warn!("could not listen for the signals to quit: {error}");
+    }
     let saver = handle.clone();
     thread::Builder::new()
         .name("settings".into())
@@ -316,6 +320,32 @@ fn setup(app: &mut tauri::App, demo: bool) -> Result<(), Box<dyn std::error::Err
             let state = saver.state::<AppState>();
             if state.settings_dirty.load(Ordering::SeqCst) {
                 state.save_settings_now();
+            }
+        })?;
+    Ok(())
+}
+
+/// Quits as the Quit item in the menu does when the system asks, at logout or
+/// shutdown, or on Ctrl+C in a terminal: the song being heard still goes into
+/// the listening history and the settings are saved. A second signal ends
+/// Singline at once.
+#[cfg(unix)]
+fn quit_on_signals(app: &AppHandle) -> std::io::Result<()> {
+    use signal_hook::consts::{SIGINT, SIGTERM};
+    use signal_hook::low_level::signal_name;
+
+    let mut signals = signal_hook::iterator::Signals::new([SIGTERM, SIGINT])?;
+    let app = app.clone();
+    thread::Builder::new()
+        .name("signals".into())
+        .spawn(move || {
+            let mut signals = signals.forever();
+            if let Some(signal) = signals.next() {
+                log::info!("{}: quitting", signal_name(signal).unwrap_or("signal"));
+                app.exit(0);
+            }
+            if signals.next().is_some() {
+                std::process::exit(1);
             }
         })?;
     Ok(())

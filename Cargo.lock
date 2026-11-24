@@ -4551,6 +4551,7 @@ dependencies = [
  "open",
  "serde",
  "serde_json",
+ "signal-hook",
  "spotify-connect",
  "sys-locale",
  "tauri",

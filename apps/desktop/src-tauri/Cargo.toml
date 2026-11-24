@@ -40,9 +40,11 @@ tokio = { version = "1", features = ["time"] }
 transcription.workspace = true
 
 # The terminal view, `singline lyrics`, in the terminal's own colours. A
-# Windows app has no terminal to draw in.
+# Windows app has no terminal to draw in. signal-hook quits cleanly at logout,
+# at shutdown and on Ctrl+C.
 [target.'cfg(unix)'.dependencies]
 crossterm = "0.29"
+signal-hook = "0.3"
 terminal-colorsaurus = "1.0"
 
 [target.'cfg(windows)'.dependencies]
