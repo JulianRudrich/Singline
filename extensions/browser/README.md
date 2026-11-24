@@ -45,7 +45,7 @@ Without the extension, Singline still sees browser tabs through the system on Wi
 
 ## How it works
 
-- `content/page.js` runs in the page, reads the `<video>` or `<audio>` element that plays and `navigator.mediaSession.metadata`, and reports about once a second while playing and on every change.
+- `content/page.js` runs in the page, reads the `<video>` or `<audio>` element that plays and `navigator.mediaSession.metadata`, and reports about once a second while playing and on every change. It skips songs with the site's own buttons where it knows them, and otherwise with the handlers the site gives the media keys.
 - `content/relay.js` passes the reports to the background and Singline's commands back to the page.
 - `background.js` with `lib/client.js` and `lib/protocol.js` pairs with Singline and sends the reports to it. Singline answers with commands (play/pause, next, previous, seek), which the tab carries out where the site allows.
 - `popup/` shows the connection and pairs.

@@ -10,7 +10,10 @@
   const PLAYING_INTERVAL = 1000;
   const PAUSED_INTERVAL = 2500;
 
-  /** The site's own skip buttons; the media element cannot skip by itself. */
+  /**
+   * The site's own skip buttons; the media element cannot skip by itself.
+   * Other sites skip through the handlers they give the media keys.
+   */
   const BUTTONS = {
     "music.youtube.com": {
       next: "ytmusic-player-bar .next-button",
@@ -125,6 +128,38 @@
     };
   }
 
+  /** The Media Session actions of the media keys that skip songs. */
+  const SKIP_ACTIONS = { next: "nexttrack", previous: "previoustrack" };
+
+  /**
+   * Keeps the handlers a site gives the Media Session, which the browser calls
+   * for the media keys: with them a site skips songs without Singline knowing
+   * its buttons.
+   */
+  function createActions() {
+    const handlers = new Map();
+    return {
+      set(action, handler) {
+        if (typeof handler === "function") handlers.set(action, handler);
+        else handlers.delete(action);
+      },
+      has(action) {
+        return handlers.has(action);
+      },
+      /** Calls the site's handler, and says whether there was one that ran. */
+      run(action) {
+        const handler = handlers.get(action);
+        if (!handler) return false;
+        try {
+          handler({ action });
+          return true;
+        } catch {
+          return false;
+        }
+      },
+    };
+  }
+
   /** What the tab plays right now, in the shape the background expects. */
   function snapshot({ media, metadata, settled, ad, controls, location, pageTitle, now }) {
     const duration = media ? finite(media.duration) : null;
@@ -146,7 +181,7 @@
     };
   }
 
-  const exported = { pickMedia, mediaScore, bestArtwork, readMetadata, createSettler, snapshot };
+  const exported = { pickMedia, mediaScore, bestArtwork, readMetadata, createSettler, createActions, snapshot };
   // In Node, for the tests, only the functions above are wanted.
   if (typeof module === "object" && typeof process === "object" && process.versions?.node) {
     module.exports = exported;
@@ -156,6 +191,7 @@
   // Everything below runs in the browser only.
   const known = [];
   const settler = createSettler();
+  const actions = createActions();
   let lastSent = 0;
   let lastReport = "";
 
@@ -185,6 +221,17 @@
     return play.apply(this, args);
   };
 
+  // The handlers for the media keys, as the site sets them. A handler the
+  // browser refuses is not kept.
+  if (typeof MediaSession === "function") {
+    const setActionHandler = MediaSession.prototype.setActionHandler;
+    MediaSession.prototype.setActionHandler = function (action, handler) {
+      const result = setActionHandler.call(this, action, handler);
+      actions.set(action, handler);
+      return result;
+    };
+  }
+
   function currentMedia() {
     for (const element of document.querySelectorAll("video, audio")) remember(element);
     return pickMedia(known);
@@ -196,6 +243,18 @@
     if (!element || element.disabled || element.getAttribute("aria-disabled") === "true") return null;
     const box = element.getBoundingClientRect();
     return box.width > 0 && box.height > 0 ? element : null;
+  }
+
+  /** Whether the site can skip that way, with its button or its media keys. */
+  function canSkip(kind) {
+    return button(kind) !== null || actions.has(SKIP_ACTIONS[kind]);
+  }
+
+  /** Skips as the site's button does, or else as its media keys do. */
+  function skip(kind) {
+    const site = button(kind);
+    if (site) site.click();
+    else actions.run(SKIP_ACTIONS[kind]);
   }
 
   function adShowing() {
@@ -220,8 +279,8 @@
       controls: {
         playPause: true,
         seek: duration !== null && duration > 0,
-        next: button("next") !== null,
-        previous: button("previous") !== null,
+        next: canSkip("next"),
+        previous: canSkip("previous"),
       },
       location: location.href,
       pageTitle: document.title,
@@ -247,11 +306,9 @@
         media.pause();
         break;
       case "next":
-      case "previous": {
-        const site = button(command.kind);
-        if (site) site.click();
+      case "previous":
+        skip(command.kind);
         break;
-      }
       case "seekTo": {
         const position = finite(command.position);
         const duration = finite(media.duration);

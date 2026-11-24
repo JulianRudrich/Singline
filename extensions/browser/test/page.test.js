@@ -2,7 +2,7 @@
 
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const { pickMedia, bestArtwork, readMetadata, createSettler, snapshot } = require("../content/page.js");
+const { pickMedia, bestArtwork, readMetadata, createSettler, createActions, snapshot } = require("../content/page.js");
 
 const element = (state) => ({ readyState: 4, currentTime: 0, paused: true, ended: false, muted: false, ...state });
 
@@ -70,4 +70,24 @@ test("a snapshot leaves out metadata while it settles or an ad plays", () => {
   const live = snapshot({ ...base, media: element({ duration: Number.POSITIVE_INFINITY }) });
   assert.equal(live.duration, null, "a live stream has no duration");
   assert.equal(snapshot({ ...base, media: null }).paused, true);
+});
+
+test("the handlers a site gives the media keys skip songs", () => {
+  const actions = createActions();
+  const calls = [];
+  assert.equal(actions.run("nexttrack"), false, "no handler yet");
+  actions.set("nexttrack", (details) => calls.push(details.action));
+  actions.set("previoustrack", () => {
+    throw new Error("the site failed");
+  });
+  assert.equal(actions.has("nexttrack"), true);
+  assert.equal(actions.run("nexttrack"), true);
+  assert.deepEqual(calls, ["nexttrack"]);
+  assert.equal(actions.run("previoustrack"), false, "a failing handler did not skip");
+
+  actions.set("nexttrack", null);
+  assert.equal(actions.has("nexttrack"), false, "the site took its handler back");
+  assert.equal(actions.run("nexttrack"), false);
+  actions.set("seekto", "not a function");
+  assert.equal(actions.has("seekto"), false);
 });
